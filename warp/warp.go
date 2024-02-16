@@ -23,6 +23,8 @@ type Warp struct {
 	machines map[string]Machine
 	prolabs  map[string]Machine
 	User     UserBrief `json:"user"`
+	update   chan Update
+	cli      *CLI
 }
 
 func newWarp(confPath string) *Warp {
@@ -33,6 +35,7 @@ func newWarp(confPath string) *Warp {
 		headers:  map[string]string{},
 		data:     map[string]string{},
 		Vpn:      map[string]string{},
+		update:   make(chan Update, 5),
 		ConfPath: fmt.Sprintf(confPath),
 	}
 	return ghtb
@@ -85,15 +88,38 @@ func GetWarpClient() (*Warp, error) {
 }
 
 func (warp *Warp) Start() {
-	cli := GetCLI(warp.User.Name, warp.apiSet(), warp.GetActiveMachine())
+	machine, _ := warp.GetActiveMachine()
+	warp.cli = GetCLI(warp.User.Name, warp.apiSet(), machine, warp.update)
+	go warp.listen()
 	if warp.apiSet() {
 		if !warp.apiValid() {
-			cli.apiSet = false
+			warp.cli.apiSet = false
 		}
-		cli.Start()
+		warp.cli.Start()
 	} else {
-		cli.Start()
+		warp.cli.Start()
 	}
+}
+
+func (warp *Warp) listen() {
+	for {
+		select {
+		case update := <-warp.update:
+			switch update.GetType() {
+			case NEW_API_KEY:
+				warp.SetNewAPIKey(update.GetUpdate()["ApiKey"])
+			}
+			fmt.Println(update)
+		}
+	}
+}
+
+func (warp *Warp) UpdateActiveMachine() {
+
+}
+
+func (warp *Warp) UpdateCurrentUser() {
+
 }
 
 func (warp *Warp) apiValid() bool {

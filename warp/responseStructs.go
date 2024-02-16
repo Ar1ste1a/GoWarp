@@ -1,5 +1,7 @@
 package warp
 
+import "encoding/json"
+
 type Machine struct {
 	ID             int     `json:"id"`
 	Avatar         string  `json:"avatar"`
@@ -16,6 +18,12 @@ type Machine struct {
 	Difficulty     int     `json:"difficulty"`
 	DifficultyText string  `json:"difficultyText"`
 	// Add other fields as needed
+}
+
+func (m Machine) GetMapString() string {
+	// Return a string representation of the machine as a json object
+	bytes, _ := json.Marshal(m)
+	return string(bytes)
 }
 
 type Link struct {
@@ -104,6 +112,12 @@ type UserBrief struct {
 	}
 	SubscriptionPlan string `json:"subscription_plan"`
 	Identifier       string `json:"identifier"`
+}
+
+func (ub UserBrief) GetMapString() string {
+	// Return a string representation of the user as a json object
+	bytes, _ := json.Marshal(ub)
+	return string(bytes)
 }
 
 type UserActivityResponse struct {

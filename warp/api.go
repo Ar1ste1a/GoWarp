@@ -20,7 +20,7 @@ func (warp *Warp) ListMachines() (ListMachinesResponse, error) {
 	if warp.apiSet() {
 		url, err = htb.GET_MACHINE_LIST_PAGINATED.Url(warp.data)
 		if err != nil {
-			fmt.Printf("List Machines Error: %s", err)
+			return lmr, err
 		} else {
 			// Make the request
 			warp.setRequest(*url)
@@ -28,14 +28,13 @@ func (warp *Warp) ListMachines() (ListMachinesResponse, error) {
 			// Send the request
 			resp, err = warp.Do()
 			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
 				return lmr, err
 			} else {
 				defer resp.Body.Close()
 
 				bodyBytes, err := io.ReadAll(resp.Body)
 				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
+					return lmr, err
 				}
 
 				err = json.Unmarshal(bodyBytes, &lmr)
@@ -49,7 +48,7 @@ func (warp *Warp) ListMachines() (ListMachinesResponse, error) {
 	return lmr, htb.LOCAL_ERROR_API_KEY_UNSET
 }
 
-// Empty Body
+// Empty Body TODO
 func (warp *Warp) GetConnectionStatus() {
 	if warp.apiSet() {
 		url, err := htb.GET_CONNECTION_STATUS.Url(warp.data)
@@ -82,11 +81,13 @@ func (warp *Warp) GetConnectionStatus() {
 }
 
 // Does not exist
-func (warp *Warp) GetActiveMachine() Machine {
+func (warp *Warp) GetActiveMachine() (Machine, error) {
+	var m Machine
+
 	if warp.apiSet() {
 		url, err := htb.GET_ACTIVE_MACHINE.Url(warp.data)
 		if err != nil {
-			fmt.Printf("Get Active Machine Error: %s", err)
+			return m, err
 		} else {
 			fmt.Printf("URL: %s", url)
 
@@ -96,22 +97,21 @@ func (warp *Warp) GetActiveMachine() Machine {
 			// Log the response
 			resp, err := warp.client.Do(warp.req)
 			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
+				return m, err
 			} else {
 				defer resp.Body.Close()
 
 				bodyBytes, err := io.ReadAll(resp.Body)
 				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
+					return m, err
 				}
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+				err = json.Unmarshal(bodyBytes, &m)
+				return m, err
 			}
 		}
 	} else {
-		fmt.Println("API Key Not Set")
+		return m, htb.LOCAL_ERROR_API_KEY_UNSET
 	}
-	return Machine{}
 }
 
 func (warp *Warp) GetUserInfo() (UserInfoResponse, error) {
@@ -120,25 +120,21 @@ func (warp *Warp) GetUserInfo() (UserInfoResponse, error) {
 	if warp.apiSet() {
 		url, err := htb.GET_USER_INFO.Url(warp.data)
 		if err != nil {
-			fmt.Printf("Get User Info Error: %s", err)
+			return uio, err
 		} else {
-			fmt.Printf("URL: %s", url)
-
 			// Make the request
 			warp.setRequest(*url)
 
 			// Log the response
 			resp, err := warp.client.Do(warp.req)
 			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
-				return UserInfoResponse{}, err
+				return uio, err
 			} else {
 				defer resp.Body.Close()
 
 				bodyBytes, err := io.ReadAll(resp.Body)
 				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
-					return UserInfoResponse{}, err
+					return uio, err
 				}
 
 				err = json.Unmarshal(bodyBytes, &uio)
@@ -147,7 +143,6 @@ func (warp *Warp) GetUserInfo() (UserInfoResponse, error) {
 		}
 	}
 
-	fmt.Println("API Key Not Set")
 	return uio, htb.LOCAL_ERROR_API_KEY_UNSET
 }
 
@@ -162,7 +157,6 @@ func TestAPIKey(key string) error {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("Get User Info Error: %s", err)
 		return err
 	} else if resp.StatusCode != 200 {
 		return htb.HTB_ERROR_INVALID_API_KEY
@@ -171,11 +165,11 @@ func TestAPIKey(key string) error {
 	}
 }
 
+// Works but cannot find use case
 func (warp *Warp) GetUserSettings() {
 	if warp.apiSet() {
 		url, err := htb.GET_USER_SETTINGS.Url(warp.data)
 		if err != nil {
-			fmt.Printf("Get Enrolled Tracks Error: %s", err)
 			//return etr, err
 		} else {
 			fmt.Printf("URL: %s", url)
@@ -186,7 +180,6 @@ func (warp *Warp) GetUserSettings() {
 			// Log the response
 			resp, err := warp.client.Do(warp.req)
 			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
 				//return etr, err
 			} else {
 				defer resp.Body.Close()
