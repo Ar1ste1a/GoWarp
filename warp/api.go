@@ -46,7 +46,7 @@ func (warp *Warp) ListMachines() (ListMachinesResponse, error) {
 	}
 
 	fmt.Println("API Key Not Set")
-	return lmr, htb.LOCAL_API_KEY_UNSET
+	return lmr, htb.LOCAL_ERROR_API_KEY_UNSET
 }
 
 // Empty Body
@@ -82,7 +82,7 @@ func (warp *Warp) GetConnectionStatus() {
 }
 
 // Does not exist
-func (warp *Warp) GetActiveMachine() {
+func (warp *Warp) GetActiveMachine() Machine {
 	if warp.apiSet() {
 		url, err := htb.GET_ACTIVE_MACHINE.Url(warp.data)
 		if err != nil {
@@ -111,6 +111,7 @@ func (warp *Warp) GetActiveMachine() {
 	} else {
 		fmt.Println("API Key Not Set")
 	}
+	return Machine{}
 }
 
 func (warp *Warp) GetUserInfo() (UserInfoResponse, error) {
@@ -147,7 +148,27 @@ func (warp *Warp) GetUserInfo() (UserInfoResponse, error) {
 	}
 
 	fmt.Println("API Key Not Set")
-	return uio, htb.LOCAL_API_KEY_UNSET
+	return uio, htb.LOCAL_ERROR_API_KEY_UNSET
+}
+
+func TestAPIKey(key string) error {
+
+	url := "https://labs.hackthebox.com/api/v4/machine/list/retired/paginated"
+	req, _ := http.NewRequest(http.MethodGet, url, nil)
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", key))
+	req.Header.Add("Content-Type", "application/json")
+
+	client := &http.Client{}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Get User Info Error: %s", err)
+		return err
+	} else if resp.StatusCode != 200 {
+		return htb.HTB_ERROR_INVALID_API_KEY
+	} else {
+		return nil
+	}
 }
 
 func (warp *Warp) GetUserSettings() {
@@ -184,7 +205,7 @@ func (warp *Warp) GetUserSettings() {
 	}
 
 	//fmt.Println("API Key Not Set")
-	//return etr, htb.LOCAL_API_KEY_UNSET
+	//return etr, htb.LOCAL_ERROR_API_KEY_UNSET
 
 }
 
@@ -273,7 +294,7 @@ func (warp *Warp) GetEnrolledTracks() (EnrolledTracksResponse, error) {
 	}
 
 	fmt.Println("API Key Not Set")
-	return etr, htb.LOCAL_API_KEY_UNSET
+	return etr, htb.LOCAL_ERROR_API_KEY_UNSET
 }
 
 // This page does not exist

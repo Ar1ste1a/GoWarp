@@ -9,7 +9,7 @@ func init() {
 }
 
 func main() {
-	warp, err := warp.GetWarp()
+	warp, err := warp.GetWarpClient()
 	if err != nil {
 		panic(err)
 	}
@@ -22,5 +22,5 @@ func main() {
 	//warp.GetListEndgames()
 	//warp.GetEndgameProfile(302)
 	//warp.ListRetiredMachines()
-	warp.GetActiveMachine()
+	warp.Start()
 }

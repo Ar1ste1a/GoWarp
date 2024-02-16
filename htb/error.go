@@ -4,6 +4,7 @@ import "errors"
 
 var (
 	HTB_ERROR_UNKNOWN              = errors.New("Unknown error")
+	HTB_ERROR_INVALID_API_KEY      = errors.New("Invalid API Key")
 	HTB_ERROR_USER_ID_MISSING      = errors.New("User ID missing")
 	HTB_ERROR_USER_ID_INVALID      = errors.New("User ID invalid")
 	HTB_ERROR_MACHINE_ID_MISSING   = errors.New("Machine ID missing")
@@ -21,5 +22,5 @@ var (
 	LOCAL_ERROR_FILE_NOT_FOUND     = errors.New("File not found")
 	LOCAL_ERROR_FILE_READ_ERROR    = errors.New("File read error")
 	VPN_ERROR_INVALID_CONFIG       = errors.New("Invalid VPN config")
-	LOCAL_API_KEY_UNSET            = errors.New("API Key not set")
+	LOCAL_ERROR_API_KEY_UNSET      = errors.New("API Key not set")
 )

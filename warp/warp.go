@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	url2 "net/url"
+	urlLib "net/url"
 	"os"
 )
+
+// Kris eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI1IiwianRpIjoiNGUzY2YxNDA3OTI2ZDQ0OWNiNDgzMjNmY2ViNjg5OWM3MWUwNzlkNTZjYWY0ZmExY2Q1YjFkODViMjgzOWExM2MxMTk0MWVjYjdlODI4ZjAiLCJpYXQiOjE3MDgwOTM2MTMuODE1OTAzLCJuYmYiOjE3MDgwOTM2MTMuODE1OTA1LCJleHAiOjE3MDgxODAwMTMuODEwODk0LCJzdWIiOiI5NTI5NjYiLCJzY29wZXMiOlsiMmZhIl19.VkG4JJ75T_38BKGHKb6kLm5wKZDZ_1rIji5vkECLL8DVR3lKfKLXXN9TrG7L1AR2N8tziZu_R92q8cQ_6t8Ue58D3s8GWlPP8LgvTNEfjy7jHZnd6I_XQKrWcRSFmFlSkxvmOKFAYIjfxYtiK0KY1FjPkC3OZkx-ZOaFeyv4F9qSkahiKHNjQXR1dnvhn1hiQKhQcvuDKP-QZ9pP3626hvGTew8w9LdklnbjE-gM7wxQiRRiPeGlykuhDRYdIdvcRmrC1FBDolBaJarpgxoStshWLh9vUdcrFvjFKl_nRknlM2Zmpk1e1roebZD2m9-rwOvezTv2Zit6jvR3NRk_lsNJX8mwUE46SoBXEkY7rneqRiuiebedMu0gfjRKeas5NMgqm9IjUBuShJT0mb5Xo5mNPPXsAphEbXV_TeKuRtZMGI3MYxkX0fXV3n37PKKbAoESAQDFP9D5yIy6LmzizYNhpmUcoxGLzyN101uVeH7R9uE0UnAiyGUQh5TQNd7ShSvE0Ja68FP1kdwaN35-N0G9NIODODDOYpYz3clMuCVweP7pHWTwLRnqpGGpGWiR0ZjzwhpIjmeAy7BdFctMXnpt3cX7pWbDbrUZATQVg7c5ljuomVzvZjyka52QicCP7HcHvnNgzvx359I2_rH7E0NZAy5bZqADZooIkDN7uBE
 
 type Warp struct {
 	ApiKey   string `json:"ApiKey"`
@@ -23,45 +25,80 @@ type Warp struct {
 	User     UserBrief `json:"user"`
 }
 
-func GetWarp() (*Warp, error) {
+func newWarp(confPath string) *Warp {
+	ghtb := &Warp{
+		ApiKey:   "",
+		client:   &http.Client{},
+		req:      nil,
+		headers:  map[string]string{},
+		data:     map[string]string{},
+		Vpn:      map[string]string{},
+		ConfPath: fmt.Sprintf(confPath),
+	}
+	return ghtb
+}
+
+func GetWarpClient() (*Warp, error) {
 	var (
 		ghtb *Warp
 		err  error
 	)
 
 	home, err := os.UserHomeDir()
-	confPath := fmt.Sprintf("%s/.htb.conf", home)
+	confFolder := fmt.Sprintf("%s/.htb", home)
+	confPath := fmt.Sprintf("%s/htb.conf", confFolder)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if util.HTBExists(confPath) {
-		ghtb, err = loadHTB(confPath)
+	// If the config folder does not exist, create it and generate a new Warp Client
+	if !util.DirExists(confFolder) {
+		err = os.Mkdir(confFolder, 0755)
+		ghtb = newWarp(confPath)
 	} else {
-		ghtb = &Warp{
-			ApiKey:   "",
-			client:   &http.Client{},
-			req:      nil,
-			headers:  map[string]string{},
-			data:     map[string]string{},
-			Vpn:      map[string]string{},
-			ConfPath: fmt.Sprintf(confPath),
+		// If the config folder exists, check if the config file exists, if not generate a new Warp Client else load the existing one
+		if util.HTBExists(confPath) {
+			ghtb, err = loadHTB(confPath)
+		} else {
+			ghtb = newWarp(confPath)
 		}
 	}
 
+	// If the API key is set
 	if ghtb.apiSet() {
 		userInfoResponse, err := ghtb.GetUserInfo()
+
+		// If the user is not set, set the user
 		if !ghtb.userSet() {
 			if err == nil {
 				ghtb.setUser(userInfoResponse.Info)
 			}
-		} else {
-			ghtb.setData("user_id", fmt.Sprintf("%d", userInfoResponse.Info.ServerID))
 		}
+
+		// Set the user id and server id
+		ghtb.setData("server_id", fmt.Sprintf("%d", userInfoResponse.Info.ServerID))
+		ghtb.setData("user_id", fmt.Sprintf("%d", userInfoResponse.Info.ID))
 	}
 
 	return ghtb, err
+}
+
+func (warp *Warp) Start() {
+	cli := GetCLI(warp.User.Name, warp.apiSet(), warp.GetActiveMachine())
+	if warp.apiSet() {
+		if !warp.apiValid() {
+			cli.apiSet = false
+		}
+		cli.Start()
+	} else {
+		cli.Start()
+	}
+}
+
+func (warp *Warp) apiValid() bool {
+	_, err := warp.GetUserInfo()
+	return err == nil
 }
 
 func (warp *Warp) setData(key, value string) {
@@ -130,7 +167,7 @@ func (warp *Warp) Do() (*http.Response, error) {
 	return warp.client.Do(warp.req)
 }
 
-func (warp *Warp) setRequest(url url2.URL) {
+func (warp *Warp) setRequest(url urlLib.URL) {
 	// Set the request
 	warp.req, _ = http.NewRequest(http.MethodGet, url.String(), nil)
 	for key, value := range warp.headers {

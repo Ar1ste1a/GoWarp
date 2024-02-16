@@ -23,3 +23,11 @@ func WriteFile(path string, data []byte) error {
 	err := os.WriteFile(path, data, 0644)
 	return err
 }
+
+func DirExists(path string) bool {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return info.IsDir()
+}
