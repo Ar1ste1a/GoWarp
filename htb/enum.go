@@ -112,6 +112,10 @@ func (e ENDPOINT) Url(data map[string]string) (*url2.URL, error) {
 	urlString := "https://labs.hackthebox.com/api/v4"
 
 	switch e {
+	case VPN_REQUEST_CONFIG:
+		urlString = fmt.Sprintf("%s/\"https://labs.hackthebox.com/api/v4/access/ovpnfile/%s%s", urlString, data["vpn_id"], data["tcp"]) // tcp /0 udp /1
+	case VPN_SWITCH_SERVER:
+		urlString = fmt.Sprintf("%s/connections/servers/switch/%s", urlString, data["vpn_id"])
 	case GET_CONNECTION_STATUS:
 		urlString = fmt.Sprintf("%s/connection/status", urlString)
 	case GET_ACTIVE_MACHINE:
