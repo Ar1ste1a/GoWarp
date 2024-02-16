@@ -141,8 +141,6 @@ func (warp *Warp) GetUserInfo() (UserInfoResponse, error) {
 				}
 
 				err = json.Unmarshal(bodyBytes, &uio)
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
 				return uio, err
 			}
 		}
@@ -488,42 +486,348 @@ func (warp *Warp) GetUserActivity() (UserActivityResponse, error) {
 	}
 }
 
-func (warp *Warp) GetUserBloods() {
+func (warp *Warp) GetUserBloods() (UserBloodsResponse, error) {
+	var (
+		ubr UserBloodsResponse
+		err error
+	)
 
+	if warp.apiSet() {
+		url, err := htb.GET_USER_BLOODS.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get User Bloods Error: %s", err)
+			return ubr, err
+		} else {
+			fmt.Printf("URL: %s", url)
+
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+				return ubr, err
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				err = json.Unmarshal(bodyBytes, &ubr)
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+				return ubr, err
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+		return ubr, err
+	}
 }
 
+// 404
 func (warp *Warp) GetUserAchievementsGraph() {
+	if warp.apiSet() {
+		url, err := htb.GET_USER_ACHIEVEMENTS_GRAPH.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get User Achievements Graph Error: %s", err)
+		} else {
+			fmt.Printf("URL: %s", url)
 
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+	}
 }
 
-func (warp *Warp) GetMachineOwnageChartByAttackPath() {
+func (warp *Warp) GetMachineOwnageChartByAttackPath() (MachineOwnageChartResponse, error) {
+	var (
+		mocr MachineOwnageChartResponse
+		err  error
+	)
 
+	if warp.apiSet() {
+		url, err := htb.GET_MACHINE_OWNAGE_CHART_BY_ATTACK_PATH.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get Machine Ownage Chart By Attack Path Error: %s", err)
+			return mocr, err
+		} else {
+			fmt.Printf("URL: %s", url)
+
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+				return mocr, err
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				err = json.Unmarshal(bodyBytes, &mocr)
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+				return mocr, err
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+		return mocr, err
+	}
 }
 
-func (warp *Warp) GetProfileOverview() {
+func (warp *Warp) GetProfileOverview(queryId int) (UserQueryResponse, error) {
+	var (
+		uqr UserQueryResponse
+		err error
+	)
 
+	if warp.apiSet() {
+		warp.setData("query_id", fmt.Sprintf("%d", queryId))
+		url, err := htb.GET_PROFILE_OVERVIEW.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get Profile Overview Error: %s", err)
+			return uqr, err
+		} else {
+			fmt.Printf("URL: %s", url)
+
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+				return uqr, err
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				err = json.Unmarshal(bodyBytes, &uqr)
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+				return uqr, err
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+		return uqr, err
+	}
 }
 
-func (warp *Warp) GetUserBadges() {
+func (warp *Warp) GetUserBadges() (UserBadgesResponse, error) {
+	var (
+		ubr UserBadgesResponse
+		err error
+	)
 
+	if warp.apiSet() {
+		url, err := htb.GET_USER_BADGES.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get User Badges Error: %s", err)
+			return ubr, err
+		} else {
+			fmt.Printf("URL: %s", url)
+
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+				return ubr, err
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				err = json.Unmarshal(bodyBytes, &ubr)
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+				return ubr, err
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+		return ubr, err
+	}
 }
 
-func (warp *Warp) GetValidateMachineOwnage() {
+func (warp *Warp) GetValidateMachineOwnage(machineID int) {
+	if warp.apiSet() {
+		warp.setData("machine_id", fmt.Sprintf("%d", machineID))
+		url, err := htb.GET_VALIDATE_MACHINE_OWNAGE.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get Validate Machine Ownage Error: %s", err)
+		} else {
+			fmt.Printf("URL: %s", url)
 
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+	}
 }
 
-func (warp *Warp) GetListEndgames() {
+func (warp *Warp) GetListEndgames() (ListEndgameResponse, error) {
+	var (
+		ler ListEndgameResponse
+		err error
+	)
 
+	if warp.apiSet() {
+		url, err := htb.GET_LIST_ENDGAMES.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get List Endgames Error: %s", err)
+			return ler, err
+		} else {
+			fmt.Printf("URL: %s", url)
+
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+				return ler, err
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				err = json.Unmarshal(bodyBytes, &ler)
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+				return ler, err
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+		return ler, err
+	}
 }
 
-func (warp *Warp) GetEndgameProfile() {
+// Works but cant find ID without supplying endgameId 404 with it
+func (warp *Warp) GetEndgameProfile(endgameId int) {
+	if warp.apiSet() {
+		warp.setData("endgame_id", fmt.Sprintf("%d", endgameId))
+		url, err := htb.GET_ENDGAME_PROFILE.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get Endgame Profile Error: %s", err)
+		} else {
+			fmt.Printf("URL: %s", url)
 
+			// Make the request
+			warp.setRequest(*url)
+
+			resp, err := warp.client.Do(warp.req)
+
+			defer resp.Body.Close()
+
+			bodyBytes, err := io.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Printf("Error Parsing Body: %s", err)
+			}
+			//err = json.Unmarshal(bodyBytes, &ler)
+			fmt.Printf("\n\nStatus: %s", resp.Status)
+			fmt.Printf("\n\nBody: %s", string(bodyBytes))
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+	}
 }
 
-func (warp *Warp) GetEndgamgeFlagList() {
+func (warp *Warp) GetEndgameFlagList() {
 
 }
 
 func (warp *Warp) GetEndgameMachineList() {
 
+}
+
+func (warp *Warp) GetProlabsList() {
+
+}
+
+func (warp *Warp) GetProlabInfo() {
+
+}
+
+func (warp *Warp) GetProlabOverview() {
+
+}
+
+func (warp *Warp) Test() {
+	url, _ := url2.Parse("https://labs.hackthebox.com/api/v4/sp/tier/0")
+
+	warp.setRequest(*url)
+	resp, _ := warp.Do()
+	defer resp.Body.Close()
+
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	fmt.Printf("\n\nStatus: %s", resp.Status)
+	fmt.Printf("\n\nBody: %s", string(bodyBytes))
+}
+
+func (warp *Warp) ListRetiredMachines() (RetiredMachinesResponse, error) {
+	var rmr RetiredMachinesResponse
+
+	url, _ := url2.Parse("https://labs.hackthebox.com/api/v4/machine/list/retired/paginated")
+
+	warp.setRequest(*url)
+	resp, _ := warp.Do()
+	defer resp.Body.Close()
+
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	err := json.Unmarshal(bodyBytes, &rmr)
+	return rmr, err
 }

@@ -115,7 +115,7 @@ func (e ENDPOINT) Url(data map[string]string) (*url2.URL, error) {
 	case GET_CONNECTION_STATUS:
 		urlString = fmt.Sprintf("%s/connection/status", urlString)
 	case GET_ACTIVE_MACHINE:
-		urlString = fmt.Sprintf("%s/machines/active", urlString)
+		urlString = fmt.Sprintf("%s/machine/active", urlString)
 	case GET_USER_INFO:
 		urlString = fmt.Sprintf("%s/user/info", urlString)
 	case GET_USER_SETTINGS:
@@ -147,7 +147,7 @@ func (e ENDPOINT) Url(data map[string]string) (*url2.URL, error) {
 	case GET_MACHINE_OWNAGE_CHART_BY_ATTACK_PATH:
 		urlString = fmt.Sprintf("%s/profile/chart/machines/attack/%s", urlString, data["user_id"])
 	case GET_PROFILE_OVERVIEW:
-		urlString = fmt.Sprintf("%s/profile/%s", urlString, data["user_id"])
+		urlString = fmt.Sprintf("%s/profile/%s", urlString, data["query_id"])
 	case GET_USER_BADGES:
 		urlString = fmt.Sprintf("%s/profile/badges/%s", urlString, data["user_id"])
 	case GET_VALIDATE_MACHINE_OWNAGE:
