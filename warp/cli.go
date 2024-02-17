@@ -897,6 +897,8 @@ func (cli *CLI) fillBadgesPane() {
 
 func (cli *CLI) fillProLabsPane() {
 	var nameColor tcell.Color
+	var color string
+
 	if len(cli.proLabs) > 0 {
 		cols := len(cli.proLabs) + 1
 		col := 0
@@ -908,12 +910,16 @@ func (cli *CLI) fillProLabsPane() {
 
 			if lab.CompletionPercentage == 100 {
 				nameColor = tcell.ColorGreen
+				color = "green"
 			} else if lab.CompletionPercentage >= 50 {
 				nameColor = tcell.ColorYellow
+				color = "yellow"
 			} else if lab.CompletionPercentage >= 25 {
 				nameColor = tcell.ColorCadetBlue
+				color = "blue"
 			} else {
 				nameColor = tcell.ColorRed
+				color = "red"
 			}
 
 			cli.proLabBox.SetCell(0, col,
@@ -923,7 +929,7 @@ func (cli *CLI) fillProLabsPane() {
 					SetAlign(tview.AlignLeft).
 					SetExpansion(3))
 			cli.proLabBox.SetCell(1, col,
-				tview.NewTableCell(fmt.Sprintf(" %d/%d (%v)", lab.OwnedFlags, lab.TotalFlags, lab.CompletionPercentage)).
+				tview.NewTableCell(fmt.Sprintf(" %d/%d [%s](%v)", lab.OwnedFlags, lab.TotalFlags, color, lab.CompletionPercentage)).
 					SetTextColor(white).
 					SetSelectable(false).
 					SetAlign(tview.AlignLeft).
