@@ -8,6 +8,8 @@ import (
 	"net/http"
 	urlLib "net/url"
 	"os"
+	"path"
+	"strings"
 	"time"
 )
 
@@ -23,6 +25,7 @@ type Warp struct {
 	ApiKey          string            `json:"ApiKey"`
 	Vpn             map[string]string `json:"Vpn"`
 	ConfPath        string            `json:"confPath"`
+	FolderPath      string            `json:"filePath"`
 	User            UserBrief         `json:"user"`
 	ProlabsProgress []ProLabProgress  `json:"prolabsProgress"`
 	Badges          []Badge           `json:"badges"`
@@ -44,18 +47,16 @@ Return: *Warp
 
 	This function is used to create a new Warp client.
 */
-func newWarp(confPath string) *Warp {
-	toCLI = make(chan Update, 5)
-	fromCLI = make(chan Update, 5)
-
+func newWarp(confPath, filePath string) *Warp {
 	ghtb := &Warp{
-		ApiKey:   "",
-		client:   &http.Client{},
-		req:      nil,
-		headers:  map[string]string{},
-		data:     map[string]string{},
-		Vpn:      map[string]string{},
-		ConfPath: fmt.Sprintf(confPath),
+		ApiKey:     "",
+		client:     &http.Client{},
+		req:        nil,
+		headers:    map[string]string{},
+		data:       map[string]string{},
+		Vpn:        map[string]string{},
+		ConfPath:   confPath,
+		FolderPath: filePath,
 	}
 	return ghtb
 }
@@ -73,14 +74,16 @@ Return: *Warp, error
 */
 func GetWarpClient() (*Warp, error) {
 	var (
-		ghtb *Warp
-		err  error
+		warpClient *Warp
+		err        error
 	)
+	toCLI = make(chan Update, 5)
+	fromCLI = make(chan Update, 5)
 
 	home, err := os.UserHomeDir()
 	confFolder := fmt.Sprintf("%s/.htb", home)
-	confPath := fmt.Sprintf("%s/htb.conf", confFolder)
-	fileFolder := fmt.Sprintf("%s/images/", confFolder)
+	confPath := path.Join(confFolder, ".htb.conf")
+	fileFolder := path.Join(confFolder, "images")
 
 	if err != nil {
 		return nil, err
@@ -89,13 +92,13 @@ func GetWarpClient() (*Warp, error) {
 	// If the config folder does not exist, create it and generate a new Warp Client
 	if !util.DirExists(confFolder) {
 		err = os.Mkdir(confFolder, 0755)
-		ghtb = newWarp(confPath)
+		warpClient = newWarp(confPath, fileFolder)
 	} else {
 		// If the config folder exists, check if the config file exists, if not generate a new Warp Client else load the existing one
 		if util.HTBExists(confPath) {
-			ghtb, err = loadHTB(confPath)
+			warpClient, err = loadHTB(confPath, fileFolder)
 		} else {
-			ghtb = newWarp(confPath)
+			warpClient = newWarp(confPath, fileFolder)
 		}
 	}
 
@@ -105,22 +108,23 @@ func GetWarpClient() (*Warp, error) {
 	}
 
 	// If the API key is set
-	if ghtb.apiSet() {
-		userInfoResponse, err := ghtb.GetUserInfo()
+	if warpClient.apiSet() {
+		userInfoResponse, err := warpClient.GetUserInfo()
+		go warpClient.grabImage(userInfoResponse.Info.Avatar, fileFolder)
 
 		// If the user is not set, set the user
-		if !ghtb.userSet() {
+		if !warpClient.userSet() {
 			if err == nil {
-				ghtb.setUser(userInfoResponse.Info)
+				warpClient.setUser(userInfoResponse.Info)
 			}
 		}
 
 		// Set the user id and server id
-		ghtb.setData("server_id", fmt.Sprintf("%d", userInfoResponse.Info.ServerID))
-		ghtb.setData("user_id", fmt.Sprintf("%d", userInfoResponse.Info.ID))
+		warpClient.setData("server_id", fmt.Sprintf("%d", userInfoResponse.Info.ServerID))
+		warpClient.setData("user_id", fmt.Sprintf("%d", userInfoResponse.Info.ID))
 	}
 
-	return ghtb, err
+	return warpClient, err
 }
 
 /*
@@ -133,7 +137,7 @@ Return: void
 */
 func (warp *Warp) Start() {
 	machine, _ := warp.GetActiveMachine()
-	warp.cli = GetCLI(warp.User.Name, warp.apiSet(), machine)
+	warp.cli = GetCLI(warp.User.Name, warp.FolderPath, warp.apiSet(), machine)
 	go warp.listen()
 	if warp.apiSet() {
 		if !warp.apiValid() {
@@ -144,9 +148,24 @@ func (warp *Warp) Start() {
 		go warp.cli.Start()
 	}
 
-	time.Sleep(5 * time.Second)
-	warp.prepCLI()
+	time.Sleep(500 * time.Millisecond)
+	if warp.apiSet() {
+		warp.prepCLI()
+	}
 	warp.listen()
+}
+
+func (warp *Warp) grabImage(avatar, fileFolder string) {
+	bytes, err := warp.GetFile(avatar)
+	if err != nil {
+		return
+	} else {
+		fileName := strings.Split(avatar, "/")[len(strings.Split(avatar, "/"))-1]
+		filePath := path.Join(fileFolder, fileName)
+		if !util.FileExists(filePath) {
+			util.StoreFile(bytes, filePath)
+		}
+	}
 }
 
 func (warp *Warp) prepCLI() {
@@ -185,6 +204,7 @@ func (warp *Warp) updateUserInfo() {
 	cu := CurrentUser{User: userBrief, Username: userInfo.Info.Name}
 	warp.User = userBrief
 	warp.sendUpdate(cu)
+	warp.grabImage(userInfo.Info.Avatar, warp.FolderPath)
 }
 
 func (warp *Warp) updateProLabsProgress() {
@@ -218,6 +238,9 @@ func (warp *Warp) updateBadges() {
 	bu := BadgesList{Badges: badges.Badges}
 	warp.Badges = badges.Badges
 	warp.sendUpdate(bu)
+	for _, badge := range badges.Badges {
+		warp.grabImage(badge.Icon, warp.FolderPath)
+	}
 }
 
 func (warp *Warp) updateRetiredMachines() {
@@ -228,6 +251,9 @@ func (warp *Warp) updateRetiredMachines() {
 	}
 	rl := RetiredMachinesList{Machines: retired.Data}
 	warp.sendUpdate(rl)
+	for _, machine := range retired.Data {
+		warp.grabImage(machine.Avatar, warp.FolderPath)
+	}
 }
 
 func (warp *Warp) updateMachines() {
@@ -238,6 +264,9 @@ func (warp *Warp) updateMachines() {
 	}
 	ml := MachinesList{Machines: machines.Data}
 	warp.sendUpdate(ml)
+	for _, machine := range machines.Data {
+		warp.grabImage(machine.Avatar, warp.FolderPath)
+	}
 }
 
 func (warp *Warp) updateActiveMachine() {
@@ -262,7 +291,6 @@ func (warp *Warp) listen() {
 			case NEW_API_KEY:
 				warp.SetNewAPIKey(update.GetUpdate()["ApiKey"])
 			}
-			fmt.Println(update)
 		}
 	}
 }
@@ -287,17 +315,18 @@ func (warp *Warp) setData(key, value string) {
 	warp.data[key] = value
 }
 
-func loadHTB(path string) (*Warp, error) {
+func loadHTB(path, fileFolder string) (*Warp, error) {
 	if fileBytes, err := util.ReadFile(path); err != nil {
 		return nil, htb.LOCAL_ERROR_FILE_NOT_FOUND
 	} else {
-		var ghtb Warp
-		err = json.Unmarshal(fileBytes, &ghtb)
-		ghtb.setClient()
-		if ghtb.apiSet() {
-			ghtb.setHeaders()
+		var warpClient Warp
+		err = json.Unmarshal(fileBytes, &warpClient)
+		warpClient.setClient()
+		if warpClient.apiSet() {
+			warpClient.setHeaders()
 		}
-		return &ghtb, err
+		warpClient.FolderPath = fileFolder
+		return &warpClient, err
 	}
 }
 

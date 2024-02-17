@@ -442,6 +442,6 @@ func (plp ProLabProgress) GetMapString() string {
 
 type ProLabsProgressResponse struct {
 	Profile struct {
-		Prolabs []ProLabProgress `json:"prolabs"`
+		Prolabs []ProLabProgress `json:"proLabs"`
 	} `json:"profile"`
 }

@@ -68,7 +68,7 @@ func (ml MachinesList) GetUpdate() map[string]string {
 	for _, machine := range ml.Machines {
 		machinesOut = append(machinesOut, machine.GetMapString())
 	}
-	machinesList := strings.Join(machinesOut, ",")
+	machinesList := strings.Join(machinesOut, "${delim}")
 	return map[string]string{"Machines": machinesList}
 }
 
@@ -85,7 +85,7 @@ func (al ActivityList) GetUpdate() map[string]string {
 	for _, activity := range al.Activity {
 		activityOut = append(activityOut, activity.GetMapString())
 	}
-	activityList := strings.Join(activityOut, ",")
+	activityList := strings.Join(activityOut, "${delim}")
 	return map[string]string{"Activity": activityList}
 }
 
@@ -102,7 +102,7 @@ func (bl BadgesList) GetUpdate() map[string]string {
 	for _, badge := range bl.Badges {
 		badgesOut = append(badgesOut, badge.GetMapString())
 	}
-	badgesList := strings.Join(badgesOut, ",")
+	badgesList := strings.Join(badgesOut, "${delim}")
 	return map[string]string{"Badges": badgesList}
 }
 
@@ -119,7 +119,7 @@ func (pp ProlabsProgress) GetUpdate() map[string]string {
 	for _, progress := range pp.Progress {
 		progressOut = append(progressOut, progress.GetMapString())
 	}
-	progressList := strings.Join(progressOut, ",")
+	progressList := strings.Join(progressOut, "${delim}")
 	return map[string]string{"Progress": progressList}
 }
 
@@ -136,7 +136,7 @@ func (rml RetiredMachinesList) GetUpdate() map[string]string {
 	for _, machine := range rml.Machines {
 		machinesOut = append(machinesOut, machine.GetMapString())
 	}
-	machinesList := strings.Join(machinesOut, ",")
+	machinesList := strings.Join(machinesOut, "${delim}")
 	return map[string]string{"Machines": machinesList}
 }
 

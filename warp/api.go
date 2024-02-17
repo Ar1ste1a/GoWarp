@@ -822,3 +822,34 @@ func (warp *Warp) GetChallengeSubmissions() {
 func (warp *Warp) GetSubscriptionBalance() {
 
 }
+
+func (warp *Warp) GetFile(path string) ([]byte, error) {
+	var bytes []byte
+
+	if warp.apiSet() {
+		warp.setData("avatar", path)
+		url, err := htb.GET_MACHINE_AVATAR_FILE.Url(warp.data)
+		if err != nil {
+			return bytes, err
+		} else {
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				return bytes, err
+			} else {
+				defer resp.Body.Close()
+
+				bytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					return bytes, err
+				}
+				return bytes, err
+			}
+		}
+	} else {
+		return bytes, htb.LOCAL_ERROR_API_KEY_UNSET
+	}
+}
