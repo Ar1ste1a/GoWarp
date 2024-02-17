@@ -111,105 +111,106 @@ const (
 )
 
 func (e ENDPOINT) Url(data map[string]string) (*url2.URL, error) {
-	urlString := "https://labs.hackthebox.com/api/v4"
+	labsString := "https://labs.hackthebox.com/api/v4"
+	htbString := "https://www.hackthebox.com/api/v4"
 
 	switch e {
 	case VPN_REQUEST_CONFIG:
-		urlString = fmt.Sprintf("%s/\"https://labs.hackthebox.com/api/v4/access/ovpnfile/%s%s", urlString, data["vpn_id"], data["tcp"]) // tcp /0 udp /1
+		labsString = fmt.Sprintf("%s/\"https://labs.hackthebox.com/api/v4/access/ovpnfile/%s%s", labsString, data["vpn_id"], data["tcp"]) // tcp /0 udp /1
 	case VPN_SWITCH_SERVER:
-		urlString = fmt.Sprintf("%s/connections/servers/switch/%s", urlString, data["vpn_id"])
+		labsString = fmt.Sprintf("%s/connections/servers/switch/%s", labsString, data["vpn_id"])
 	case GET_CONNECTION_STATUS:
-		urlString = fmt.Sprintf("%s/connection/status", urlString)
+		labsString = fmt.Sprintf("%s/connection/status", labsString)
 	case GET_ACTIVE_MACHINE:
-		urlString = fmt.Sprintf("%s/machine/active", urlString)
+		labsString = fmt.Sprintf("%s/machine/active", labsString)
 	case GET_USER_INFO:
-		urlString = fmt.Sprintf("%s/user/info", urlString)
+		labsString = fmt.Sprintf("%s/user/info", labsString)
 	case GET_USER_SETTINGS:
-		urlString = fmt.Sprintf("%s/user/settings", urlString)
+		labsString = fmt.Sprintf("%s/user/settings", labsString)
 	case GET_SUBSCRIPTION_STATUS:
-		urlString = fmt.Sprintf("%s/user/subscriptions", urlString)
+		labsString = fmt.Sprintf("%s/user/subscriptions", labsString)
 	case GET_SUBSCRIPTION_BALANCE:
-		urlString = fmt.Sprintf("%s/user/subscriptions/balance", urlString)
+		labsString = fmt.Sprintf("%s/user/subscriptions/balance", labsString)
 	case GET_ENROLLED_TRACKS:
-		urlString = fmt.Sprintf("%s/user/tracks", urlString)
+		labsString = fmt.Sprintf("%s/user/tracks", labsString)
 	case GET_CHALLENGE_SUBMISSIONS:
-		urlString = fmt.Sprintf("%s/submissions/challenges", urlString)
+		labsString = fmt.Sprintf("%s/submissions/challenges", labsString)
 	case GET_USER_PROGRESS_MACHINES_BY_OS:
-		urlString = fmt.Sprintf("%s/profile/progress/machines/os/%s", urlString, data["user_id"])
+		labsString = fmt.Sprintf("%s/profile/progress/machines/os/%s", labsString, data["user_id"])
 	case GET_USER_PROGRESS_CHALLENGES_BY_CATEGORY:
-		urlString = fmt.Sprintf("%s/profile/progress/challenges/%s", urlString, data["user_id"])
+		labsString = fmt.Sprintf("%s/profile/progress/challenges/%s", labsString, data["user_id"])
 	case GET_USER_PROGRESS_ENDGAME:
-		urlString = fmt.Sprintf("%s/profile/progress/endgame/%s", urlString, data["user_id"])
+		labsString = fmt.Sprintf("%s/profile/progress/endgame/%s", labsString, data["user_id"])
 	case GET_USER_PROGRESS_FORTRESS:
-		urlString = fmt.Sprintf("%s/profile/progress/fortress/%s", urlString, data["user_id"])
+		labsString = fmt.Sprintf("%s/profile/progress/fortress/%s", labsString, data["user_id"])
 	case GET_USER_PROGRESS_PROLABS:
-		urlString = fmt.Sprintf("%s/profile/progress/prolabs/%s", urlString, data["user_id"])
+		labsString = fmt.Sprintf("%s/profile/progress/prolab/%s", htbString, data["user_id"])
 	case GET_USER_ACTIVITY:
-		urlString = fmt.Sprintf("%s/profile/activity/%s", urlString, data["user_id"])
+		labsString = fmt.Sprintf("%s/profile/activity/%s", labsString, data["server_id"])
 	case GET_USER_BLOODS:
-		urlString = fmt.Sprintf("%s/profile/bloods/%s", urlString, data["user_id"])
+		labsString = fmt.Sprintf("%s/profile/bloods/%s", labsString, data["user_id"])
 	case GET_USER_ACHIEVEMENTS_GRAPH:
-		urlString = fmt.Sprintf("%s/profile/graph/%s/%s", urlString, data["progress_time"], data["user_id"]) // progress time can be one of 1Y, 6M, 3M, 1M, 1W
+		labsString = fmt.Sprintf("%s/profile/graph/%s/%s", labsString, data["progress_time"], data["user_id"]) // progress time can be one of 1Y, 6M, 3M, 1M, 1W
 	case GET_MACHINE_OWNAGE_CHART_BY_ATTACK_PATH:
-		urlString = fmt.Sprintf("%s/profile/chart/machines/attack/%s", urlString, data["user_id"])
+		labsString = fmt.Sprintf("%s/profile/chart/machines/attack/%s", labsString, data["user_id"])
 	case GET_PROFILE_OVERVIEW:
-		urlString = fmt.Sprintf("%s/profile/%s", urlString, data["query_id"])
+		labsString = fmt.Sprintf("%s/user/profile/basic/%s", htbString, data["query_id"])
 	case GET_USER_BADGES:
-		urlString = fmt.Sprintf("%s/profile/badges/%s", urlString, data["user_id"])
+		labsString = fmt.Sprintf("%s/profile/badges/%s", htbString, data["user_id"])
 	case GET_VALIDATE_MACHINE_OWNAGE:
 		if _, ok := data["machine_id"]; !ok {
 			return nil, HTB_ERROR_MACHINE_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/user/achievement/machine/%s/%s", urlString, data["user_id"], data["machine_id"])
+		labsString = fmt.Sprintf("%s/user/achievement/machine/%s/%s", labsString, data["user_id"], data["machine_id"])
 	case GET_LIST_ENDGAMES:
-		urlString = fmt.Sprintf("%s/endgames", urlString)
+		labsString = fmt.Sprintf("%s/endgames", labsString)
 	case GET_ENDGAME_PROFILE:
 		if _, ok := data["endgame_id"]; !ok {
 			return nil, HTB_ERROR_ENDGAME_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/endgame/%s", urlString, data["endgame_id"])
+		labsString = fmt.Sprintf("%s/endgame/%s", labsString, data["endgame_id"])
 	case GET_ENDGAMGE_FLAG_LIST:
 		if _, ok := data["endgame_id"]; !ok {
 			return nil, HTB_ERROR_ENDGAME_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/endgame/%s/flags", urlString, data["endgame_id"])
+		labsString = fmt.Sprintf("%s/endgame/%s/flags", labsString, data["endgame_id"])
 	case GET_ENDGAME_MACHINE_LIST:
 		if _, ok := data["endgame_id"]; !ok {
 			return nil, HTB_ERROR_ENDGAME_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/endgame/%s/machines", urlString, data["endgame_id"])
+		labsString = fmt.Sprintf("%s/endgame/%s/machines", labsString, data["endgame_id"])
 	case GET_PROLABS_LIST:
-		urlString = fmt.Sprintf("%s/prolabs", urlString)
+		labsString = fmt.Sprintf("%s/prolabs", labsString)
 	case GET_PROLAB_INFO:
 		if _, ok := data["prolab_id"]; !ok {
 			return nil, HTB_ERROR_PROLAB_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/prolabs/%s", urlString, data["prolab_id"])
+		labsString = fmt.Sprintf("%s/prolabs/%s", labsString, data["prolab_id"])
 	case GET_PROLAB_OVERVIEW:
 		if _, ok := data["prolab_id"]; !ok {
 			return nil, HTB_ERROR_PROLAB_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/prolabs/%s/overview", urlString, data["prolab_id"])
+		labsString = fmt.Sprintf("%s/prolabs/%s/overview", labsString, data["prolab_id"])
 	case GET_PROLAB_MACHINES:
 		if _, ok := data["prolab_id"]; !ok {
 			return nil, HTB_ERROR_PROLAB_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/prolabs/%s/machines", urlString, data["prolab_id"])
+		labsString = fmt.Sprintf("%s/prolabs/%s/machines", labsString, data["prolab_id"])
 	case GET_PROLAB_FLAG_LIST:
 		if _, ok := data["prolab_id"]; !ok {
 			return nil, HTB_ERROR_PROLAB_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/prolabs/%s/flags", urlString, data["prolab_id"])
+		labsString = fmt.Sprintf("%s/prolabs/%s/flags", labsString, data["prolab_id"])
 	case GET_PROLAB_FAQ:
 		if _, ok := data["prolab_id"]; !ok {
 			return nil, HTB_ERROR_PROLAB_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/prolabs/%s/faq", urlString, data["prolab_id"])
+		labsString = fmt.Sprintf("%s/prolabs/%s/faq", labsString, data["prolab_id"])
 	case GET_PROLAB_REVIEWS:
 		if _, ok := data["prolab_id"]; !ok {
 			return nil, HTB_ERROR_PROLAB_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/prolabs/%s/reviews_overview", urlString, data["prolab_id"])
+		labsString = fmt.Sprintf("%s/prolabs/%s/reviews_overview", labsString, data["prolab_id"])
 	case GET_PROLAB_REVIEWS_PAGINATED:
 		if _, ok := data["prolab_id"]; !ok {
 			return nil, HTB_ERROR_PROLAB_ID_MISSING
@@ -217,84 +218,84 @@ func (e ENDPOINT) Url(data map[string]string) (*url2.URL, error) {
 		if _, ok := data["page_num"]; !ok {
 			return nil, HTB_ERROR_PAGE_NUMBER_MISSING
 		}
-		urlString = fmt.Sprintf("%s/prolabs/%s/reviews?page=%s", urlString, data["prolab_id"], data["page_num"])
+		labsString = fmt.Sprintf("%s/prolabs/%s/reviews?page=%s", labsString, data["prolab_id"], data["page_num"])
 	case GET_FORTRESS_LIST:
-		urlString = fmt.Sprintf("%s/fortresses", urlString)
+		labsString = fmt.Sprintf("%s/fortresses", labsString)
 	case GET_FORTRESS_INFO:
 		if _, ok := data["fortress_id"]; !ok {
 			return nil, HTB_ERROR_FORTRESS_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/fortress/%s", urlString, data["fortress_id"])
+		labsString = fmt.Sprintf("%s/fortress/%s", labsString, data["fortress_id"])
 	case GET_FORTRESS_FLAG_LIST:
 		if _, ok := data["fortress_id"]; !ok {
 			return nil, HTB_ERROR_FORTRESS_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/fortress/%s/flags", urlString, data["fortress_id"])
+		labsString = fmt.Sprintf("%s/fortress/%s/flags", labsString, data["fortress_id"])
 	case GET_STARTING_POINT_MACHINE_LIST:
-		urlString = fmt.Sprintf("%s/sp/machines", urlString)
+		labsString = fmt.Sprintf("%s/sp/machines", labsString)
 	case GET_BADGE_LIST_BY_CATEGORY:
-		urlString = fmt.Sprintf("%s/badges", urlString)
+		labsString = fmt.Sprintf("%s/badges", labsString)
 	case GET_BADGE_LIST_BY_CATEGORY_ALTERNATE:
-		urlString = fmt.Sprintf("%s/category/badges", urlString)
+		labsString = fmt.Sprintf("%s/category/badges", labsString)
 	case GET_DASHBOARD_MACHINE_CHALLENGE_COUNTS:
-		urlString = fmt.Sprintf("%s/content/stats", urlString)
+		labsString = fmt.Sprintf("%s/content/stats", labsString)
 	case GET_HTB_SERVER_LIST:
-		urlString = fmt.Sprintf("%s/lab/list", urlString)
+		labsString = fmt.Sprintf("%s/lab/list", labsString)
 	case GET_DASHBOARD:
-		urlString = fmt.Sprintf("%s/user/dashboard", urlString)
+		labsString = fmt.Sprintf("%s/user/dashboard", labsString)
 	case GET_RANKINGS_BEST_BY_COUNTRY_FOR_YEAR:
-		urlString = fmt.Sprintf("%s/rankings/country/best?period=1Y", urlString)
+		labsString = fmt.Sprintf("%s/rankings/country/best?period=1Y", labsString)
 	case GET_RANKINGS_BEST_BY_COUNTRY:
-		urlString = fmt.Sprintf("%s/rankings/country/ranking_bracket", urlString)
+		labsString = fmt.Sprintf("%s/rankings/country/ranking_bracket", labsString)
 	case GET_LIST_ACTIVE_MACHINES:
-		urlString = fmt.Sprintf("%s/machine/list", urlString)
+		labsString = fmt.Sprintf("%s/machine/list", labsString)
 	case GET_LIST_RETIRED_MACHINES:
-		urlString = fmt.Sprintf("%s/machine/list/retired", urlString)
+		labsString = fmt.Sprintf("%s/machine/list/retired", labsString)
 	case GET_LIST_TODO_MACHINES:
-		urlString = fmt.Sprintf("%s/machine/list/todo", urlString)
+		labsString = fmt.Sprintf("%s/machine/list/todo", labsString)
 	case GET_MACHINE_PROFILE:
 		if _, ok := data["machine_id"]; !ok {
 			return nil, HTB_ERROR_MACHINE_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/machine/profile/%s", urlString, data["machine_id"])
+		labsString = fmt.Sprintf("%s/machine/profile/%s", labsString, data["machine_id"])
 	case GET_MACHINE_ACTIVITY:
 		if _, ok := data["machine_id"]; !ok {
 			return nil, HTB_ERROR_MACHINE_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/machine/activity/%s", urlString, data["machine_id"])
+		labsString = fmt.Sprintf("%s/machine/activity/%s", labsString, data["machine_id"])
 	case GET_MACHINE_TOP_25_OWNERS:
 		if _, ok := data["machine_id"]; !ok {
 			return nil, HTB_ERROR_MACHINE_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/machine/owns/top/%s", urlString, data["machine_id"])
+		labsString = fmt.Sprintf("%s/machine/owns/top/%s", labsString, data["machine_id"])
 	case GET_MACHINE_TAGS_SUB_LANGUAGE:
 		if _, ok := data["machine_id"]; !ok {
 			return nil, HTB_ERROR_MACHINE_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/machine/tags/%s", urlString, data["machine_id"])
+		labsString = fmt.Sprintf("%s/machine/tags/%s", labsString, data["machine_id"])
 	case GET_MACHINE_LIST_PAGINATED:
-		urlString = fmt.Sprintf("%s/machine/paginated", urlString)
+		labsString = fmt.Sprintf("%s/machine/paginated", labsString)
 	case GET_MACHINE_LIST_TAGS:
 		if _, ok := data["machine_id"]; !ok {
 			return nil, HTB_ERROR_MACHINE_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/machine/tags/%s", urlString, data["machine_id"])
+		labsString = fmt.Sprintf("%s/machine/tags/%s", labsString, data["machine_id"])
 	case GET_MACHINE_LIST_WALKTHROUGH:
 		if _, ok := data["machine_id"]; !ok {
 			return nil, HTB_ERROR_MACHINE_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/machine/walkthroughs/%s", urlString, data["machine_id"])
+		labsString = fmt.Sprintf("%s/machine/walkthroughs/%s", labsString, data["machine_id"])
 	case GET_MACHINE_OFFICIAL_WRITEUP:
 		if _, ok := data["machine_id"]; !ok {
 			return nil, HTB_ERROR_MACHINE_ID_MISSING
 		}
-		urlString = fmt.Sprintf("%s/machine/writeup/%s", urlString, data["machine_id"])
+		labsString = fmt.Sprintf("%s/machine/writeup/%s", labsString, data["machine_id"])
 	default:
 		// do nothing
 		return nil, HTB_ERROR_UNKNOWN
 	}
 
-	url, err := url2.Parse(urlString)
+	url, err := url2.Parse(labsString)
 	if err != nil {
 		return nil, err
 	}

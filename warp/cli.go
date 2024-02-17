@@ -9,6 +9,7 @@ import (
 	"github.com/rivo/tview"
 	"net"
 	"strings"
+	"sync"
 )
 
 var (
@@ -33,21 +34,31 @@ type CLI struct {
 	apiSet           bool
 	activeMachine    Machine
 	ifaces           map[string][]string
-	updates          chan Update
 	restart          chan bool
+	targetIP         string
+	lock             *sync.Mutex
+	retiredMachines  []RetiredMachine
+	activeMachines   []Machine
+	activities       []UserActivity
+	badges           []Badge
+	prolabs          []ProLabProgress
 }
 
-func GetCLI(username string, apiSet bool, activeMachine Machine, updates chan Update) *CLI {
+func GetCLI(username string, apiSet bool, activeMachine Machine) *CLI {
 	cli := &CLI{
 		Username:      username,
 		apiSet:        apiSet,
 		activeMachine: activeMachine,
-		updates:       updates,
 		restart:       make(chan bool),
 	}
 	cli.setIfaces()
 	cli.setNewApp()
+	go cli.handleUpdates()
 	return cli
+}
+
+func (cli *CLI) getLock() *sync.Mutex {
+	return cli.lock
 }
 
 func (cli *CLI) Start() {
@@ -66,15 +77,12 @@ func (cli *CLI) getApplicationPanes() *tview.Flex {
 	leftPane := cli.getLeftPane()
 	rightPane := cli.getRightPane()
 
-	//flex := tview.NewFlex().SetDirection(tview.FlexColumn).
-	//	AddItem(leftPane, 0, 1, false).
-	//	AddItem(rightPane, 0, 3, false)
-
+	// Get the top pane
 	top := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(leftPane, 0, 1, false).
 		AddItem(rightPane, 0, 3, false)
 
-	//bottom := tview.NewBox().SetBorder(true).SetTitle("───────[ [::bl][purple]Badges[-] ]").SetTitleAlign(tview.AlignLeft).SetBorderColor(htbGreen).SetTitleColor(htbGreen).SetBackgroundColor(black)
+	// Get the bottom pane
 	bottom := cli.getBadgesPane()
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(top, 0, 10, false).
@@ -196,7 +204,7 @@ func (cli *CLI) getUnauthenticatedLeftPane() *tview.Flex {
 // //////////////////////////////////////////////////////// LEFT PANE //////////////////////////////////////////////////////////
 func (cli *CLI) getAuthenticatedRightPane() *tview.Flex {
 	activeMachineTitle := "───────[ [::bl][purple]Active Machine[-] [::-]]───────"
-	rankingTitle := "───────[ [::bl][purple]Recent Activity[-] [::-]]───────"
+	activityTitle := "───────[ [::bl][purple]Recent Activity[-] [::-]]───────"
 	interfaceLine := cli.getIfacesLine()
 
 	// ActiveMachine Box
@@ -205,22 +213,22 @@ func (cli *CLI) getAuthenticatedRightPane() *tview.Flex {
 	cli.activeMachineBox = activeMachineBox
 
 	// Ranking Box
-	rankingBox := tview.NewBox()
-	rankingBox.SetBorder(true).SetTitle(rankingTitle).SetTitleAlign(tview.AlignRight).SetBorderColor(htbGreen).SetTitleColor(htbGreen).SetBackgroundColor(black)
-	cli.rankingBox = rankingBox
+	activityBox := tview.NewBox()
+	activityBox.SetBorder(true).SetTitle(activityTitle).SetTitleAlign(tview.AlignRight).SetBorderColor(htbGreen).SetTitleColor(htbGreen).SetBackgroundColor(black)
+	cli.rankingBox = activityBox
 
 	// Machines Table
 	machineTable := tview.NewTable().SetBorders(true).SetBordersColor(htbGreen).SetSelectable(true, false)
-	machineTable.SetCell(0, 0, tview.NewTableCell("ID").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 0, tview.NewTableCell("Avatar").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
 	machineTable.SetCell(0, 1, tview.NewTableCell("Name").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 2, tview.NewTableCell("IP").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 3, tview.NewTableCell("OS").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 4, tview.NewTableCell("Difficulty").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 5, tview.NewTableCell("Points").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 6, tview.NewTableCell("Release").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 2, tview.NewTableCell("OS").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 3, tview.NewTableCell("Points").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 4, tview.NewTableCell("Stars").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 5, tview.NewTableCell("Free").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 6, tview.NewTableCell("Difficulty").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
 	machineTable.SetCell(0, 7, tview.NewTableCell("Retired").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 8, tview.NewTableCell("User Own").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 9, tview.NewTableCell("Root Own").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 8, tview.NewTableCell("Release").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	//machineTable.SetCell(0, 9, tview.NewTableCell("Root Own").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
 	machineTable.SetBorder(true).SetTitle(interfaceLine).SetTitleAlign(tview.AlignRight).SetBorderColor(htbGreen).SetTitleColor(htbGreen).SetBackgroundColor(black)
 	cli.machineTable = machineTable
 
@@ -228,14 +236,14 @@ func (cli *CLI) getAuthenticatedRightPane() *tview.Flex {
 	rightPane := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(machineTable, 0, 3, false).
 		AddItem(activeMachineBox, 5, 2, false).
-		AddItem(rankingBox, 0, 1, false)
+		AddItem(activityBox, 0, 1, false)
 
 	return rightPane
 }
 
 func (cli *CLI) getUnauthenticatedRightPane() *tview.Flex {
 	activeMachineTitle := "───────[ [::bl][purple]Active Machine[-] [::-]]───────"
-	rankingTitle := "───────[ [::bl][purple]Recent Activity[-] [::-]]───────"
+	activityTitle := "───────[ [::bl][purple]Recent Activity[-] [::-]]───────"
 	interfaceLine := cli.getIfacesLine()
 
 	// ActiveMachine Box
@@ -244,22 +252,22 @@ func (cli *CLI) getUnauthenticatedRightPane() *tview.Flex {
 	cli.activeMachineBox = activeMachineBox
 
 	// Ranking Box
-	rankingBox := tview.NewBox()
-	rankingBox.SetBorder(true).SetTitle(rankingTitle).SetTitleAlign(tview.AlignRight).SetBorderColor(htbGreen).SetTitleColor(htbGreen).SetBackgroundColor(black)
-	cli.rankingBox = rankingBox
+	activityBox := tview.NewBox()
+	activityBox.SetBorder(true).SetTitle(activityTitle).SetTitleAlign(tview.AlignRight).SetBorderColor(htbGreen).SetTitleColor(htbGreen).SetBackgroundColor(black)
+	cli.rankingBox = activityBox
 
 	// Machines Table
 	machineTable := tview.NewTable().SetBorders(true).SetBordersColor(htbGreen).SetSelectable(true, false)
-	machineTable.SetCell(0, 0, tview.NewTableCell("ID").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 0, tview.NewTableCell("Avatar").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
 	machineTable.SetCell(0, 1, tview.NewTableCell("Name").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 2, tview.NewTableCell("IP").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 3, tview.NewTableCell("OS").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 4, tview.NewTableCell("Difficulty").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 5, tview.NewTableCell("Points").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 6, tview.NewTableCell("Release").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 2, tview.NewTableCell("OS").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 3, tview.NewTableCell("Points").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 4, tview.NewTableCell("Stars").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 5, tview.NewTableCell("Free").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 6, tview.NewTableCell("Difficulty").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
 	machineTable.SetCell(0, 7, tview.NewTableCell("Retired").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 8, tview.NewTableCell("User Own").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
-	machineTable.SetCell(0, 9, tview.NewTableCell("Root Own").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	machineTable.SetCell(0, 8, tview.NewTableCell("Release").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
+	//machineTable.SetCell(0, 9, tview.NewTableCell("Root Owns").SetTextColor(htbGreen).SetSelectable(false).SetExpansion(2).SetAlign(tview.AlignCenter))
 	machineTable.SetBorder(true).SetTitle(interfaceLine).SetTitleAlign(tview.AlignRight).SetBorderColor(htbGreen).SetTitleColor(htbGreen).SetBackgroundColor(black)
 	cli.machineTable = machineTable
 
@@ -267,7 +275,7 @@ func (cli *CLI) getUnauthenticatedRightPane() *tview.Flex {
 	rightPane := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(machineTable, 0, 3, false).
 		AddItem(activeMachineBox, 5, 2, false).
-		AddItem(rankingBox, 0, 1, false)
+		AddItem(activityBox, 0, 1, false)
 
 	return rightPane
 }
@@ -280,6 +288,12 @@ func (cli *CLI) getIfacesLine() string {
 		}
 	}
 	interfaceLine += "─────"
+	if cli.targetIP != "" {
+		//sword := "▬▬ι═══════ﺤ "
+		//sword3 := "▬▬ι═══════ﺤ    -═══════ι▬▬"
+		sword2 := "[black]▬▬[yellow]ι[white]═══════ﺤ[-]"
+		interfaceLine += fmt.Sprintf("%s[::bl][purple] Target: %s [-][::-]]", sword2, cli.targetIP)
+	}
 	return interfaceLine
 }
 
@@ -337,35 +351,111 @@ func (cli *CLI) parseAPIKeyInput(apiKeyInput *tview.InputField) {
 	} else {
 		cli.apiSet = true
 		cli.restart <- true
-		cli.updates <- NewApiKey{ApiKey: apiKeyTrimmed}
+		fromCLI <- NewApiKey{ApiKey: apiKeyTrimmed}
 	}
 }
 
-// Listener for updates to the application
-func (cli *CLI) Update(update Update) {
+func (cli *CLI) handleUpdates() {
 	for {
 		select {
-		case u := <-cli.updates:
-			switch u.GetType() {
+		case update := <-toCLI:
+			switch update.GetType() {
 			case CURRENT_USER:
-				cli.UpdateCurrentUser(u.GetUpdate())
+				cli.UpdateCurrentUser(update)
 			case ACTIVE_MACHINE:
-				cli.UpdateActiveMachine(u.GetUpdate())
+				cli.UpdateActiveMachine(update)
 			case MACHINES_LIST:
-				cli.UpdateMachinesList(u.GetUpdate())
+				cli.UpdateMachinesList(update)
 			case ACTIVITY_LIST:
-				cli.UpdateRecentActivityList(u.GetUpdate())
+				cli.UpdateRecentActivityList(update)
 			case VPN_LIST:
-				cli.UpdateVPNList(u.GetUpdate())
+
+				cli.UpdateVPNList(update)
 			case VPN_STATUS:
-				cli.UpdateVPNStatus(u.GetUpdate())
+
+				cli.UpdateVPNStatus(update)
+			case BADGES_LIST:
+				cli.updateBadges(update)
+			case PROLABS_PROGRESS:
+				cli.updateProlabsProgress(update)
+			default:
+				return
 			}
 		}
 	}
 }
 
-func (cli *CLI) UpdateCurrentUser(data map[string]string) {
+//// Listener for fromWarp to the application
+//func (cli *CLI) Update(update Update) {
+//	lock := cli.getLock()
+//
+//	switch update.GetType() {
+//	case CURRENT_USER:
+//		cli.UpdateCurrentUser(update)
+//	case ACTIVE_MACHINE:
+//		cli.UpdateActiveMachine(update)
+//	case MACHINES_LIST:
+//		cli.UpdateMachinesList(update)
+//	case ACTIVITY_LIST:
+//		cli.UpdateRecentActivityList(update)
+//	case VPN_LIST:
+//
+//		cli.UpdateVPNList(update)
+//	case VPN_STATUS:
+//
+//		cli.UpdateVPNStatus(update)
+//	case BADGES_LIST:
+//		cli.updateBadges(update)
+//	case PROLABS_PROGRESS:
+//		cli.updateProlabsProgress(update)
+//	default:
+//		return
+//	}
+//
+//	lock.Unlock()
+//}
+
+func (cli *CLI) updateProlabsProgress(update Update) {
+	var prolabProgress []ProLabProgress
+
+	data := update.GetUpdate()
+
+	// Convert the string to a list of ProLabProgress
+	prolabProgressString := data["ProLabProgress"]
+	err := json.Unmarshal([]byte(prolabProgressString), &prolabProgress)
+	if err != nil {
+		panic(err) // todo log here
+	}
+
+	// Update the ProLabProgress
+	cli.prolabs = prolabProgress
+
+	// Restart the Application
+	cli.restart <- true
+}
+
+func (cli *CLI) updateBadges(update Update) {
+	var badges []Badge
+
+	data := update.GetUpdate()
+
+	// Convert the string to a list of Badges
+	badgesString := data["Badges"]
+	err := json.Unmarshal([]byte(badgesString), &badges)
+	if err != nil {
+		panic(err) // todo log here
+	}
+
+	// Update the Badges
+	cli.badges = badges
+
+	cli.restart <- true
+}
+
+func (cli *CLI) UpdateCurrentUser(update Update) {
 	var user UserBrief
+
+	data := update.GetUpdate()
 
 	cli.Username = data["Username"]
 	userString := data["User"]
@@ -375,51 +465,66 @@ func (cli *CLI) UpdateCurrentUser(data map[string]string) {
 	}
 	cli.user = user
 
-	// Update the User Pane TODO
-
 	// Restart the Application
 	cli.restart <- true
 }
 
-func (cli *CLI) UpdateActiveMachine(data map[string]string) {
+func (cli *CLI) UpdateActiveMachine(update Update) {
 	var machine Machine
 
+	data := update.GetUpdate()
 	machinesString := data["ActiveMachine"]
 	err := json.Unmarshal([]byte(machinesString), &machine)
 	if err != nil {
 		panic(err)
 	}
 
-	// Update the Active Machine Pane TODO
+	// Update the Active Machine
+	cli.activeMachine = machine
 
 	// Restart the Application
 	cli.restart <- true
 }
 
-func (cli *CLI) UpdateMachinesList(data map[string]string) {
+func (cli *CLI) UpdateMachinesList(update Update) {
 	var machines []Machine
 
+	data := update.GetUpdate()
 	machinesListString := data["Machines"]
 	err := json.Unmarshal([]byte(machinesListString), &machines)
 	if err != nil {
 		panic(err)
 	}
 
-	// Update the Machines Pane TODO
+	// Update the Machines List
+	cli.activeMachines = machines
 
 	// Restart the Application
 	cli.restart <- true
 }
 
-func (cli *CLI) UpdateRecentActivityList(data map[string]string) {
+func (cli *CLI) UpdateRecentActivityList(update Update) {
+	data := update.GetUpdate()
+
+	// Convert the string to a list of UserActivity
+	activitiesString := data["Activities"]
+	err := json.Unmarshal([]byte(activitiesString), &cli.activities)
+	if err != nil {
+		panic(err) // todo log here
+	}
+
 	cli.restart <- true
 }
 
-func (cli *CLI) UpdateVPNList(data map[string]string) {
+func (cli *CLI) UpdateVPNList(update Update) {
+	data := update.GetUpdate()
+	fmt.Printf("VPN List: %v\n", data)
 	cli.restart <- true
 }
 
-func (cli *CLI) UpdateVPNStatus(data map[string]string) {
+func (cli *CLI) UpdateVPNStatus(update Update) {
+	data := update.GetUpdate()
+	fmt.Printf("VPN Status: %v\n", data)
 	cli.restart <- true
 }
 
@@ -464,16 +569,144 @@ func (cli *CLI) fillVPNPane() {
 				}))
 		row++
 	}
-	//cli.vpnBox.Select(0,0).SetFixed(1,1).SetDoneFunc(func(key tcell.Key) {
-	//
-	//}
 }
 
 func (cli *CLI) fillMachinePane() {
+	rowsActive := len(cli.activeMachines) + 1
+	rowsRetired := len(cli.retiredMachines) + 1
+	row := 1
+
+	if rowsActive > 1 {
+		for _, machine := range cli.activeMachines {
+			if !(row < rowsActive) {
+				break
+			}
+
+			cli.machineTable.SetCell(row, 0,
+				tview.NewTableCell(fmt.Sprintf(" %s ", machine.Avatar)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 1,
+				tview.NewTableCell(fmt.Sprintf(" %s ", machine.Name)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 2,
+				tview.NewTableCell(fmt.Sprintf(" %s ", machine.Os)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 3,
+				tview.NewTableCell(fmt.Sprintf(" %d ", machine.Points)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 4,
+				tview.NewTableCell(fmt.Sprintf(" %v ", machine.Star)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 5,
+				tview.NewTableCell(fmt.Sprintf(" %v ", machine.Free)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 6,
+				tview.NewTableCell(fmt.Sprintf(" %s ", machine.DifficultyText)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 7,
+				tview.NewTableCell(fmt.Sprintf(" %v ", false)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 8,
+				tview.NewTableCell(fmt.Sprintf(" %s ", machine.Release)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			row++
+		}
+	}
+	if rowsRetired > 1 {
+		row = 1
+		for _, machine := range cli.retiredMachines {
+			if !(row < rowsRetired) {
+				break
+			}
+
+			cli.machineTable.SetCell(row, 0,
+				tview.NewTableCell(fmt.Sprintf(" %s ", machine.Avatar)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 1,
+				tview.NewTableCell(fmt.Sprintf(" %s ", machine.Name)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 2,
+				tview.NewTableCell(fmt.Sprintf(" %s ", machine.Os)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 3,
+				tview.NewTableCell(fmt.Sprintf(" %d ", machine.Points)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 4,
+				tview.NewTableCell(fmt.Sprintf(" %v ", machine.Star)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 5,
+				tview.NewTableCell(fmt.Sprintf(" %v ", machine.Free)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 6,
+				tview.NewTableCell(fmt.Sprintf(" %s ", machine.DifficultyText)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 7,
+				tview.NewTableCell(fmt.Sprintf(" %v ", true)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			cli.machineTable.SetCell(row, 8,
+				tview.NewTableCell(fmt.Sprintf(" %s ", machine.Release)).
+					SetTextColor(white).
+					SetSelectable(false).
+					SetAlign(tview.AlignLeft).
+					SetExpansion(2))
+			row++
+		}
+	}
 	// TODO
 }
 
-func (cli *CLI) fillRankingPane() {
+func (cli *CLI) fillActivityPane() {
 
 }
 

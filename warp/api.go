@@ -80,7 +80,6 @@ func (warp *Warp) GetConnectionStatus() {
 	}
 }
 
-// Does not exist
 func (warp *Warp) GetActiveMachine() (Machine, error) {
 	var m Machine
 
@@ -89,8 +88,6 @@ func (warp *Warp) GetActiveMachine() (Machine, error) {
 		if err != nil {
 			return m, err
 		} else {
-			fmt.Printf("URL: %s", url)
-
 			// Make the request
 			warp.setRequest(*url)
 
@@ -243,10 +240,6 @@ func (warp *Warp) GetSubscriptionStatus() (SubscriptionStatusResponse, error) {
 	return ssr, err
 }
 
-func (warp *Warp) GetSubscriptionBalance() {
-
-}
-
 func (warp *Warp) GetEnrolledTracks() (EnrolledTracksResponse, error) {
 	var (
 		//err error
@@ -290,174 +283,6 @@ func (warp *Warp) GetEnrolledTracks() (EnrolledTracksResponse, error) {
 	return etr, htb.LOCAL_ERROR_API_KEY_UNSET
 }
 
-// This page does not exist
-func (warp *Warp) GetChallengeSubmissions() {
-	if warp.apiSet() {
-		url, err := htb.GET_CHALLENGE_SUBMISSIONS.Url(warp.data)
-		if err != nil {
-			fmt.Printf("Get Challenge Submissions Error: %s", err)
-		} else {
-			fmt.Printf("URL: %s", url)
-
-			// Make the request
-			warp.setRequest(*url)
-
-			// Log the response
-			resp, err := warp.client.Do(warp.req)
-			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
-			} else {
-				defer resp.Body.Close()
-
-				bodyBytes, err := io.ReadAll(resp.Body)
-				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
-				}
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
-			}
-		}
-	} else {
-		fmt.Println("API Key Not Set")
-
-	}
-}
-
-// This page does not exist
-func (warp *Warp) GetUserProgressMachinesByOS() {
-	if warp.apiSet() {
-		url, err := htb.GET_USER_PROGRESS_MACHINES_BY_OS.Url(warp.data)
-		if err != nil {
-			fmt.Printf("Get User Progress Machines By OS Error: %s", err)
-		} else {
-			fmt.Printf("URL: %s", url)
-
-			// Make the request
-			warp.setRequest(*url)
-
-			// Log the response
-			resp, err := warp.client.Do(warp.req)
-			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
-			} else {
-				defer resp.Body.Close()
-
-				bodyBytes, err := io.ReadAll(resp.Body)
-				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
-				}
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
-			}
-		}
-	} else {
-		fmt.Println("API Key Not Set")
-
-	}
-}
-
-// 404
-func (warp *Warp) GetUserProgressChallengesByCategory() {
-	if warp.apiSet() {
-		url, err := htb.GET_USER_PROGRESS_CHALLENGES_BY_CATEGORY.Url(warp.data)
-		if err != nil {
-			fmt.Printf("Get User Progress Challenges By Category Error: %s", err)
-		} else {
-			fmt.Printf("URL: %s", url)
-
-			// Make the request
-			warp.setRequest(*url)
-
-			// Log the response
-			resp, err := warp.client.Do(warp.req)
-			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
-			} else {
-				defer resp.Body.Close()
-
-				bodyBytes, err := io.ReadAll(resp.Body)
-				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
-				}
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
-			}
-		}
-	} else {
-		fmt.Println("API Key Not Set")
-
-	}
-}
-
-// 404
-func (warp *Warp) GetUserProgressEndgame() {
-	if warp.apiSet() {
-		url, err := htb.GET_USER_PROGRESS_ENDGAME.Url(warp.data)
-		if err != nil {
-			fmt.Printf("Get User Progress Endgame Error: %s", err)
-		} else {
-			fmt.Printf("URL: %s", url)
-
-			// Make the request
-			warp.setRequest(*url)
-
-			// Log the response
-			resp, err := warp.client.Do(warp.req)
-			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
-			} else {
-				defer resp.Body.Close()
-
-				bodyBytes, err := io.ReadAll(resp.Body)
-				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
-				}
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
-			}
-		}
-	} else {
-		fmt.Println("API Key Not Set")
-
-	}
-}
-
-func (warp *Warp) GetUserProgressFortress() {
-
-}
-
-// 404
-func (warp *Warp) GetUserProgressProlabs() {
-	if warp.apiSet() {
-		url, err := htb.GET_USER_PROGRESS_PROLABS.Url(warp.data)
-		if err != nil {
-			fmt.Printf("Get User Progress Prolabs Error: %s", err)
-		} else {
-			fmt.Printf("URL: %s", url)
-
-			// Make the request
-			warp.setRequest(*url)
-
-			// Log the response
-			resp, err := warp.client.Do(warp.req)
-			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
-			} else {
-				defer resp.Body.Close()
-
-				bodyBytes, err := io.ReadAll(resp.Body)
-				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
-				}
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
-			}
-		}
-	} else {
-		fmt.Println("API Key Not Set")
-	}
-}
-
 func (warp *Warp) GetUserActivity() (UserActivityResponse, error) {
 	var (
 		uar UserActivityResponse
@@ -467,10 +292,8 @@ func (warp *Warp) GetUserActivity() (UserActivityResponse, error) {
 	if warp.apiSet() {
 		url, err := htb.GET_USER_ACTIVITY.Url(warp.data)
 		if err != nil {
-			fmt.Printf("Get User Activity Error: %s", err)
 			return uar, err
 		} else {
-			fmt.Printf("URL: %s", url)
 
 			// Make the request
 			warp.setRequest(*url)
@@ -478,18 +301,15 @@ func (warp *Warp) GetUserActivity() (UserActivityResponse, error) {
 			// Log the response
 			resp, err := warp.client.Do(warp.req)
 			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
 				return uar, err
 			} else {
 				defer resp.Body.Close()
 
 				bodyBytes, err := io.ReadAll(resp.Body)
 				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
+					return uar, err
 				}
 				err = json.Unmarshal(bodyBytes, &uar)
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
 
 				return uar, err
 			}
@@ -541,38 +361,6 @@ func (warp *Warp) GetUserBloods() (UserBloodsResponse, error) {
 	}
 }
 
-// 404
-func (warp *Warp) GetUserAchievementsGraph() {
-	if warp.apiSet() {
-		url, err := htb.GET_USER_ACHIEVEMENTS_GRAPH.Url(warp.data)
-		if err != nil {
-			fmt.Printf("Get User Achievements Graph Error: %s", err)
-		} else {
-			fmt.Printf("URL: %s", url)
-
-			// Make the request
-			warp.setRequest(*url)
-
-			// Log the response
-			resp, err := warp.client.Do(warp.req)
-			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
-			} else {
-				defer resp.Body.Close()
-
-				bodyBytes, err := io.ReadAll(resp.Body)
-				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
-				}
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
-			}
-		}
-	} else {
-		fmt.Println("API Key Not Set")
-	}
-}
-
 func (warp *Warp) GetMachineOwnageChartByAttackPath() (MachineOwnageChartResponse, error) {
 	var (
 		mocr MachineOwnageChartResponse
@@ -614,86 +402,71 @@ func (warp *Warp) GetMachineOwnageChartByAttackPath() (MachineOwnageChartRespons
 	}
 }
 
-func (warp *Warp) GetProfileOverview(queryId int) (UserQueryResponse, error) {
+func (warp *Warp) GetUserProfileOverview(queryId int) (UserQueryResponse, error) {
 	var (
 		uqr UserQueryResponse
-		err error
 	)
 
 	if warp.apiSet() {
 		warp.setData("query_id", fmt.Sprintf("%d", queryId))
 		url, err := htb.GET_PROFILE_OVERVIEW.Url(warp.data)
 		if err != nil {
-			fmt.Printf("Get Profile Overview Error: %s", err)
 			return uqr, err
 		} else {
-			fmt.Printf("URL: %s", url)
-
 			// Make the request
 			warp.setRequest(*url)
 
 			// Log the response
 			resp, err := warp.client.Do(warp.req)
 			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
 				return uqr, err
 			} else {
 				defer resp.Body.Close()
 
 				bodyBytes, err := io.ReadAll(resp.Body)
 				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
+					return uqr, err
 				}
 				err = json.Unmarshal(bodyBytes, &uqr)
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
 				return uqr, err
 			}
 		}
 	} else {
-		fmt.Println("API Key Not Set")
-		return uqr, err
+		return uqr, htb.LOCAL_ERROR_API_KEY_UNSET
 	}
 }
 
 func (warp *Warp) GetUserBadges() (UserBadgesResponse, error) {
 	var (
 		ubr UserBadgesResponse
-		err error
 	)
 
 	if warp.apiSet() {
 		url, err := htb.GET_USER_BADGES.Url(warp.data)
 		if err != nil {
-			fmt.Printf("Get User Badges Error: %s", err)
 			return ubr, err
 		} else {
-			fmt.Printf("URL: %s", url)
-
 			// Make the request
 			warp.setRequest(*url)
 
 			// Log the response
 			resp, err := warp.client.Do(warp.req)
 			if err != nil {
-				fmt.Printf("Error Performing Request: %s", err)
 				return ubr, err
 			} else {
 				defer resp.Body.Close()
 
 				bodyBytes, err := io.ReadAll(resp.Body)
 				if err != nil {
-					fmt.Printf("Error Parsing Body: %s", err)
+					return ubr, err
 				}
 				err = json.Unmarshal(bodyBytes, &ubr)
-				fmt.Printf("\n\nStatus: %s", resp.Status)
-				fmt.Printf("\n\nBody: %s", string(bodyBytes))
 				return ubr, err
 			}
 		}
 	} else {
 		fmt.Println("API Key Not Set")
-		return ubr, err
+		return ubr, htb.LOCAL_ERROR_API_KEY_UNSET
 	}
 }
 
@@ -770,34 +543,18 @@ func (warp *Warp) GetListEndgames() (ListEndgameResponse, error) {
 	}
 }
 
-// Works but cant find ID without supplying endgameId 404 with it
-func (warp *Warp) GetEndgameProfile(endgameId int) {
-	if warp.apiSet() {
-		warp.setData("endgame_id", fmt.Sprintf("%d", endgameId))
-		url, err := htb.GET_ENDGAME_PROFILE.Url(warp.data)
-		if err != nil {
-			fmt.Printf("Get Endgame Profile Error: %s", err)
-		} else {
-			fmt.Printf("URL: %s", url)
+func (warp *Warp) ListRetiredMachines() (RetiredMachinesResponse, error) {
+	var rmr RetiredMachinesResponse
 
-			// Make the request
-			warp.setRequest(*url)
+	url, _ := url2.Parse("https://labs.hackthebox.com/api/v4/machine/list/retired/paginated")
 
-			resp, err := warp.client.Do(warp.req)
+	warp.setRequest(*url)
+	resp, _ := warp.Do()
+	defer resp.Body.Close()
 
-			defer resp.Body.Close()
-
-			bodyBytes, err := io.ReadAll(resp.Body)
-			if err != nil {
-				fmt.Printf("Error Parsing Body: %s", err)
-			}
-			//err = json.Unmarshal(bodyBytes, &ler)
-			fmt.Printf("\n\nStatus: %s", resp.Status)
-			fmt.Printf("\n\nBody: %s", string(bodyBytes))
-		}
-	} else {
-		fmt.Println("API Key Not Set")
-	}
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	err := json.Unmarshal(bodyBytes, &rmr)
+	return rmr, err
 }
 
 func (warp *Warp) GetEndgameFlagList() {
@@ -832,16 +589,236 @@ func (warp *Warp) Test() {
 	fmt.Printf("\n\nBody: %s", string(bodyBytes))
 }
 
-func (warp *Warp) ListRetiredMachines() (RetiredMachinesResponse, error) {
-	var rmr RetiredMachinesResponse
+// Works but cant find ID without supplying endgameId 404 with it
+func (warp *Warp) GetEndgameProfile(endgameId int) {
+	if warp.apiSet() {
+		warp.setData("endgame_id", fmt.Sprintf("%d", endgameId))
+		url, err := htb.GET_ENDGAME_PROFILE.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get Endgame Profile Error: %s", err)
+		} else {
+			fmt.Printf("URL: %s", url)
 
-	url, _ := url2.Parse("https://labs.hackthebox.com/api/v4/machine/list/retired/paginated")
+			// Make the request
+			warp.setRequest(*url)
 
-	warp.setRequest(*url)
-	resp, _ := warp.Do()
-	defer resp.Body.Close()
+			resp, err := warp.client.Do(warp.req)
 
-	bodyBytes, _ := io.ReadAll(resp.Body)
-	err := json.Unmarshal(bodyBytes, &rmr)
-	return rmr, err
+			defer resp.Body.Close()
+
+			bodyBytes, err := io.ReadAll(resp.Body)
+			if err != nil {
+				fmt.Printf("Error Parsing Body: %s", err)
+			}
+			//err = json.Unmarshal(bodyBytes, &ler)
+			fmt.Printf("\n\nStatus: %s", resp.Status)
+			fmt.Printf("\n\nBody: %s", string(bodyBytes))
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+	}
+}
+
+// 404
+func (warp *Warp) GetUserAchievementsGraph() {
+	if warp.apiSet() {
+		url, err := htb.GET_USER_ACHIEVEMENTS_GRAPH.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get User Achievements Graph Error: %s", err)
+		} else {
+			fmt.Printf("URL: %s", url)
+
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+	}
+}
+
+// 404
+func (warp *Warp) GetUserProgressChallengesByCategory() {
+	if warp.apiSet() {
+		url, err := htb.GET_USER_PROGRESS_CHALLENGES_BY_CATEGORY.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get User Progress Challenges By Category Error: %s", err)
+		} else {
+			fmt.Printf("URL: %s", url)
+
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+
+	}
+}
+
+// 404
+func (warp *Warp) GetUserProgressEndgame() {
+	if warp.apiSet() {
+		url, err := htb.GET_USER_PROGRESS_ENDGAME.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get User Progress Endgame Error: %s", err)
+		} else {
+			fmt.Printf("URL: %s", url)
+
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+
+	}
+}
+
+func (warp *Warp) GetUserProgressFortress() {
+
+}
+
+// 404
+func (warp *Warp) GetUserProgressProlabs() (ProLabsProgressResponse, error) {
+	var plpr ProLabsProgressResponse
+
+	if warp.apiSet() {
+		url, err := htb.GET_USER_PROGRESS_PROLABS.Url(warp.data)
+		if err != nil {
+			return plpr, err
+		} else {
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				return plpr, err
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					return plpr, err
+				}
+				err = json.Unmarshal(bodyBytes, &plpr)
+				return plpr, err
+			}
+		}
+	} else {
+		return plpr, htb.LOCAL_ERROR_API_KEY_UNSET
+	}
+}
+
+// This page does not exist
+func (warp *Warp) GetUserProgressMachinesByOS() {
+	if warp.apiSet() {
+		url, err := htb.GET_USER_PROGRESS_MACHINES_BY_OS.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get User Progress Machines By OS Error: %s", err)
+		} else {
+			fmt.Printf("URL: %s", url)
+
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+
+	}
+}
+
+// This page does not exist
+func (warp *Warp) GetChallengeSubmissions() {
+	if warp.apiSet() {
+		url, err := htb.GET_CHALLENGE_SUBMISSIONS.Url(warp.data)
+		if err != nil {
+			fmt.Printf("Get Challenge Submissions Error: %s", err)
+		} else {
+			fmt.Printf("URL: %s", url)
+
+			// Make the request
+			warp.setRequest(*url)
+
+			// Log the response
+			resp, err := warp.client.Do(warp.req)
+			if err != nil {
+				fmt.Printf("Error Performing Request: %s", err)
+			} else {
+				defer resp.Body.Close()
+
+				bodyBytes, err := io.ReadAll(resp.Body)
+				if err != nil {
+					fmt.Printf("Error Parsing Body: %s", err)
+				}
+				fmt.Printf("\n\nStatus: %s", resp.Status)
+				fmt.Printf("\n\nBody: %s", string(bodyBytes))
+			}
+		}
+	} else {
+		fmt.Println("API Key Not Set")
+
+	}
+}
+
+func (warp *Warp) GetSubscriptionBalance() {
+
 }

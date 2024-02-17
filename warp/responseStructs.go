@@ -138,6 +138,12 @@ type UserActivity struct {
 	MachineAvatar string `json:"machine_avatar"`
 }
 
+func (ua UserActivity) GetMapString() string {
+	// Return a string representation of the user activity as a json object
+	bytes, _ := json.Marshal(ua)
+	return string(bytes)
+}
+
 type Subscription struct {
 	Name        string      `json:"name"`
 	EndsAt      string      `json:"ends_at"`
@@ -284,6 +290,12 @@ type Badge struct {
 	} `json:"pivot"`
 }
 
+func (b Badge) GetMapString() string {
+	// Return a string representation of the badge as a json object
+	bytes, _ := json.Marshal(b)
+	return string(bytes)
+}
+
 type UserBadgesResponse struct {
 	Badges []Badge `json:"badges"`
 }
@@ -337,7 +349,7 @@ type PlayInfo struct {
 	ExpiresAt interface{} `json:"expires_at"`
 }
 
-type RetiredData struct {
+type RetiredMachine struct {
 	ID                  int              `json:"id"`
 	Avatar              string           `json:"avatar"`
 	Name                string           `json:"name"`
@@ -367,6 +379,13 @@ type RetiredData struct {
 	Recommended         int              `json:"recommended"`
 }
 
+func (rm RetiredMachine) GetMapString() string {
+	// Return a string representation of the retired machine as a json object
+	bytes, _ := json.Marshal(rm)
+	return string(bytes)
+
+}
+
 type RetiredLink struct {
 	First string      `json:"first"`
 	Last  string      `json:"last"`
@@ -392,9 +411,9 @@ type RetiredMeta struct {
 }
 
 type RetiredMachinesResponse struct {
-	Data  []RetiredData `json:"data"`
-	Links RetiredLink   `json:"links"`
-	Meta  RetiredMeta   `json:"meta"`
+	Data  []RetiredMachine `json:"data"`
+	Links RetiredLink      `json:"links"`
+	Meta  RetiredMeta      `json:"meta"`
 }
 
 type ActiveMachineResponse struct {
@@ -404,4 +423,25 @@ type ActiveMachineResponse struct {
 		Type interface{} `json:"type"`
 		Ip   string      `json:"ip"`
 	} `json:"info"`
+}
+
+type ProLabProgress struct {
+	Name                 string  `json:"name"`
+	CompletionPercentage float64 `json:"completion_percentage"`
+	OwnedFlags           int     `json:"owned_flags"`
+	TotalFlags           int     `json:"total_flags"`
+	TotalMachines        int     `json:"total_machines"`
+	AverageRatings       float64 `json:"average_ratings"`
+}
+
+func (plp ProLabProgress) GetMapString() string {
+	// Return a string representation of the prolab progress as a json object
+	bytes, _ := json.Marshal(plp)
+	return string(bytes)
+}
+
+type ProLabsProgressResponse struct {
+	Profile struct {
+		Prolabs []ProLabProgress `json:"prolabs"`
+	} `json:"profile"`
 }

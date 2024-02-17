@@ -8,26 +8,46 @@ import (
 	"net/http"
 	urlLib "net/url"
 	"os"
+	"time"
 )
 
 // Kris eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI1IiwianRpIjoiNGUzY2YxNDA3OTI2ZDQ0OWNiNDgzMjNmY2ViNjg5OWM3MWUwNzlkNTZjYWY0ZmExY2Q1YjFkODViMjgzOWExM2MxMTk0MWVjYjdlODI4ZjAiLCJpYXQiOjE3MDgwOTM2MTMuODE1OTAzLCJuYmYiOjE3MDgwOTM2MTMuODE1OTA1LCJleHAiOjE3MDgxODAwMTMuODEwODk0LCJzdWIiOiI5NTI5NjYiLCJzY29wZXMiOlsiMmZhIl19.VkG4JJ75T_38BKGHKb6kLm5wKZDZ_1rIji5vkECLL8DVR3lKfKLXXN9TrG7L1AR2N8tziZu_R92q8cQ_6t8Ue58D3s8GWlPP8LgvTNEfjy7jHZnd6I_XQKrWcRSFmFlSkxvmOKFAYIjfxYtiK0KY1FjPkC3OZkx-ZOaFeyv4F9qSkahiKHNjQXR1dnvhn1hiQKhQcvuDKP-QZ9pP3626hvGTew8w9LdklnbjE-gM7wxQiRRiPeGlykuhDRYdIdvcRmrC1FBDolBaJarpgxoStshWLh9vUdcrFvjFKl_nRknlM2Zmpk1e1roebZD2m9-rwOvezTv2Zit6jvR3NRk_lsNJX8mwUE46SoBXEkY7rneqRiuiebedMu0gfjRKeas5NMgqm9IjUBuShJT0mb5Xo5mNPPXsAphEbXV_TeKuRtZMGI3MYxkX0fXV3n37PKKbAoESAQDFP9D5yIy6LmzizYNhpmUcoxGLzyN101uVeH7R9uE0UnAiyGUQh5TQNd7ShSvE0Ja68FP1kdwaN35-N0G9NIODODDOYpYz3clMuCVweP7pHWTwLRnqpGGpGWiR0ZjzwhpIjmeAy7BdFctMXnpt3cX7pWbDbrUZATQVg7c5ljuomVzvZjyka52QicCP7HcHvnNgzvx359I2_rH7E0NZAy5bZqADZooIkDN7uBE
+// Evan eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI1IiwianRpIjoiNDJkZmQwYjVkNDMwZmJlNWI1MzFiYmFlZDZhZTZiMmY0ZmNlM2ZiZGRjMjUzMWM5ZmZmM2RlMzg1N2I2MDc4NTRlZWUyNDJmMjAwNWVhOTAiLCJpYXQiOjE3MDgwNDE0NTUuMTYzMzEsIm5iZiI6MTcwODA0MTQ1NS4xNjMzMTEsImV4cCI6MTczOTU3NzQ1NS4xNTQ0ODMsInN1YiI6IjEzMTM0MjUiLCJzY29wZXMiOlsiMmZhIl19.o9J5W1hX8amzQase1G2UKnAEZMHNdrfboCGK0n3epaCClVCRNR78BIVCykKNVC1LIhzv7fm9qOJxSnCHlFGwkUiclEXSFASJ1ywiWorcLXWSGIhdqUQ11v3_Jv4XIRoR74Lp2PVVizhyas55-wzmw0j-qLWynsjUOVsPR5TJHo_IOj8bErckXh-VcUEAXZTNNsXZS3vML3QEJyQpWrecyGvWlsAsKRO_PuI7FYygB8_SLjf65sB1QsAlFUxhriB04ogC4grocXf5efOfbF-0QTqRmv26qWwoSxUYsAcVCYvySPIk20HtvLkOF0ik04VEboxSQ0GCZ3q1sWNunwX-PdU8HVKpnGRT3I5hM-oAJBPTB53iq-1zt5tz6yjBWRYH50AGb6lgdtqZ1tHc18R5jyYSE6-3ICZKrT0kysH6eSFzqi04cAoRTXIE4dA739xb9dZZUU4qqVx4JFx3TP74BYAXWcx5ocmvoKYBU8NY2r6_4h1w61Cffpgeo4gmnxuNIfAGnYJmww5NGG_LyXqgYzOKCwEoahhKDYrEGu9ulZlHMyaGXifmyG9mhGpvHzMATDgn-gMvBNhKTV5QHFynloDmCBNlyNQQuHm6KiLF2J-QMJtGdXWwRdDqe4tc88qjL1Mks5BuK8UhQPRH6lVrB8mJf5qJHDVYAwGsMoTfhK4
+
+var (
+	toCLI   chan Update
+	fromCLI chan Update
+)
 
 type Warp struct {
-	ApiKey   string `json:"ApiKey"`
-	client   *http.Client
-	req      *http.Request
-	headers  map[string]string
-	data     map[string]string
-	Vpn      map[string]string `json:"Vpn"`
-	ConfPath string            `json:"confPath"`
-	machines map[string]Machine
-	prolabs  map[string]Machine
-	User     UserBrief `json:"user"`
-	update   chan Update
-	cli      *CLI
+	ApiKey          string            `json:"ApiKey"`
+	Vpn             map[string]string `json:"Vpn"`
+	ConfPath        string            `json:"confPath"`
+	User            UserBrief         `json:"user"`
+	ProlabsProgress []ProLabProgress  `json:"prolabsProgress"`
+	Badges          []Badge           `json:"badges"`
+	Activity        []UserActivity    `json:"activity"`
+	currentVPN      string
+	client          *http.Client
+	req             *http.Request
+	headers         map[string]string
+	data            map[string]string
+	machines        map[string]Machine
+	prolabs         map[string]Machine
+	cli             *CLI
 }
 
+/*
+NewWarp
+
+Return: *Warp
+
+	This function is used to create a new Warp client.
+*/
 func newWarp(confPath string) *Warp {
+	toCLI = make(chan Update, 5)
+	fromCLI = make(chan Update, 5)
+
 	ghtb := &Warp{
 		ApiKey:   "",
 		client:   &http.Client{},
@@ -35,12 +55,22 @@ func newWarp(confPath string) *Warp {
 		headers:  map[string]string{},
 		data:     map[string]string{},
 		Vpn:      map[string]string{},
-		update:   make(chan Update, 5),
 		ConfPath: fmt.Sprintf(confPath),
 	}
 	return ghtb
 }
 
+/*
+GetWarpClient
+
+Return: *Warp, error
+
+	This function is used to get the Warp client.
+	If the config folder does not exist, it will be created and a new Warp client will be generated.
+	If the config folder exists, the config file will be checked,
+	if it does not exist a new Warp client will be generated,
+	else the existing one will be loaded.
+*/
 func GetWarpClient() (*Warp, error) {
 	var (
 		ghtb *Warp
@@ -50,6 +80,7 @@ func GetWarpClient() (*Warp, error) {
 	home, err := os.UserHomeDir()
 	confFolder := fmt.Sprintf("%s/.htb", home)
 	confPath := fmt.Sprintf("%s/htb.conf", confFolder)
+	fileFolder := fmt.Sprintf("%s/images/", confFolder)
 
 	if err != nil {
 		return nil, err
@@ -66,6 +97,11 @@ func GetWarpClient() (*Warp, error) {
 		} else {
 			ghtb = newWarp(confPath)
 		}
+	}
+
+	// If the file folder does not exist, create it
+	if !util.DirExists(fileFolder) {
+		err = os.Mkdir(fileFolder, 0755)
 	}
 
 	// If the API key is set
@@ -87,24 +123,141 @@ func GetWarpClient() (*Warp, error) {
 	return ghtb, err
 }
 
+/*
+Start
+
+Return: void
+
+	This function is used to start the Warp client.
+	This function will start the CLI and listen for fromWarp.
+*/
 func (warp *Warp) Start() {
 	machine, _ := warp.GetActiveMachine()
-	warp.cli = GetCLI(warp.User.Name, warp.apiSet(), machine, warp.update)
+	warp.cli = GetCLI(warp.User.Name, warp.apiSet(), machine)
 	go warp.listen()
 	if warp.apiSet() {
 		if !warp.apiValid() {
 			warp.cli.apiSet = false
 		}
-		warp.cli.Start()
+		go warp.cli.Start()
 	} else {
-		warp.cli.Start()
+		go warp.cli.Start()
 	}
+
+	time.Sleep(5 * time.Second)
+	warp.prepCLI()
+	warp.listen()
+}
+
+func (warp *Warp) prepCLI() {
+	warp.updateUserInfo()
+	warp.updateActivity()
+	warp.updateBadges()
+	warp.updateProLabsProgress()
+	warp.updateActiveMachine()
+	warp.updateRetiredMachines()
+	warp.updateMachines()
+}
+
+func (warp *Warp) fetchTargetIP() {
+
+}
+
+func (warp *Warp) updateUserInfo() {
+	userInfo, err := warp.GetUserInfo()
+	if err != nil {
+		// todo log here
+		return
+	}
+	userBrief := UserBrief{
+		ID:               userInfo.Info.ID,
+		Name:             userInfo.Info.Name,
+		Avatar:           userInfo.Info.Avatar,
+		IsViP:            userInfo.Info.IsVip,
+		CanAccessVIP:     userInfo.Info.CanAccessVIP,
+		IsServerVIP:      userInfo.Info.IsServerVIP,
+		ServerID:         userInfo.Info.ServerID,
+		RankID:           userInfo.Info.RankID,
+		Team:             userInfo.Info.Team,
+		SubscriptionPlan: userInfo.Info.SubscriptionPlan,
+		Identifier:       userInfo.Info.Identifier,
+	}
+	cu := CurrentUser{User: userBrief, Username: userInfo.Info.Name}
+	warp.User = userBrief
+	warp.sendUpdate(cu)
+}
+
+func (warp *Warp) updateProLabsProgress() {
+	prolabs, err := warp.GetUserProgressProlabs()
+	if err != nil {
+		// todo log here
+		return
+	}
+	warp.ProlabsProgress = prolabs.Profile.Prolabs
+	prolabsProgress := ProlabsProgress{Progress: prolabs.Profile.Prolabs}
+	warp.sendUpdate(prolabsProgress)
+}
+
+func (warp *Warp) updateActivity() {
+	activity, err := warp.GetUserActivity()
+	if err != nil {
+		// todo log here
+		return
+	}
+	al := ActivityList{Activity: activity.Profile.Activity[:10]}
+	warp.Activity = activity.Profile.Activity[:10]
+	warp.sendUpdate(al)
+}
+
+func (warp *Warp) updateBadges() {
+	badges, err := warp.GetUserBadges()
+	if err != nil {
+		// todo log here
+		return
+	}
+	bu := BadgesList{Badges: badges.Badges}
+	warp.Badges = badges.Badges
+	warp.sendUpdate(bu)
+}
+
+func (warp *Warp) updateRetiredMachines() {
+	retired, err := warp.ListRetiredMachines()
+	if err != nil {
+		// todo log here
+		return
+	}
+	rl := RetiredMachinesList{Machines: retired.Data}
+	warp.sendUpdate(rl)
+}
+
+func (warp *Warp) updateMachines() {
+	machines, err := warp.ListMachines()
+	if err != nil {
+		// todo log here
+		return
+	}
+	ml := MachinesList{Machines: machines.Data}
+	warp.sendUpdate(ml)
+}
+
+func (warp *Warp) updateActiveMachine() {
+	active, err := warp.GetActiveMachine()
+	if err != nil {
+		// todo log here
+		return
+	}
+	am := ActiveMachine{active}
+	warp.sendUpdate(am)
+}
+
+func (warp *Warp) sendUpdate(update Update) {
+	toCLI <- update
 }
 
 func (warp *Warp) listen() {
 	for {
 		select {
-		case update := <-warp.update:
+		case update := <-fromCLI:
 			switch update.GetType() {
 			case NEW_API_KEY:
 				warp.SetNewAPIKey(update.GetUpdate()["ApiKey"])
