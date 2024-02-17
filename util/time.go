@@ -12,7 +12,8 @@ func HumanReadableDate(dateString string) string {
 	}
 
 	// Format the time to a human-readable format
-	humanReadable := t.Format("Monday, 02 January 2006, 03:04:05 PM")
+	//humanReadable := t.Format("Monday, 02 January 2006, 03:04:05 PM")
+	humanReadable := t.Format("02 January 2006")
 
 	return humanReadable
 }
